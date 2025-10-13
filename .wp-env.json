@@ -1,0 +1,22 @@
+{
+    "core": "WordPress/WordPress",
+    "config": {
+        "WP_DEBUG": true,
+        "WP_DEBUG_LOG": true,
+        "WP_DEBUG_DISPLAY": false,
+        "SCRIPT_DEBUG": true,
+        "JETPACK_DEV_DEBUG": true
+    },
+    "themes":[
+        "WordPress/twentytwentyone"
+    ],
+    "mappings": {
+        "wp-content": "./wp-content"
+    },
+    "plugins": [
+        "./src/omeda-newsletter-connector"
+    ],
+    "phpVersion": "8.0",
+    "testsPort": 8889,
+    "port": 8888
+}
