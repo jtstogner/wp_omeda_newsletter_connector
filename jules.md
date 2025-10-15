@@ -16,6 +16,9 @@ This is a WordPress plugin designed to integrate the WordPress post publishing l
     
 *   **`class-omeda-workflow-manager.php`**: The core of the plugin. It manages a 5-step asynchronous deployment process using WordPress's built-in cron system (`WP-Cron`).
     
+### API Documentation
+
+Reference Omeda API documentation can be found in the `docs/omeda_api_docs` directory within this project. The documentation is provided in Markdown format.
 
 ### Development Environment
 
