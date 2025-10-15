@@ -155,7 +155,35 @@ class Omeda_Workflow_Manager {
         $timestamp = time() + $delay_seconds;
         $args = array($post_id, $track_id, $config_id, $step, $retry_count);
 
-        wp_schedule_single_event($timestamp, self::CRON_HOOK, $args);
+        // Clear any previously scheduled instances of this hook with the same args
+        // to prevent duplicate cron jobs.
+        wp_clear_scheduled_hook(self::CRON_HOOK, $args);
+
+        // Schedule the event
+        $scheduled = wp_schedule_single_event($timestamp, self::CRON_HOOK, $args);
+
+        // After scheduling, trigger a "cron-warming" request to ensure the event fires
+        // in low-traffic environments (like local dev).
+        if ($scheduled) {
+            $this->trigger_cron_spawn();
+        }
+    }
+
+    /**
+     * Triggers a non-blocking request to the WP-Cron runner.
+     * This helps ensure cron jobs fire on time in low-traffic/local environments.
+     */
+    private function trigger_cron_spawn() {
+        // Get the cron URL. It's important to use the site_url to get the correct domain
+        // in a multisite or containerized environment.
+        $cron_url = get_site_url(null, '/wp-cron.php?doing_wp_cron');
+
+        // Use a non-blocking request to prevent delaying the current request.
+        wp_remote_post($cron_url, [
+            'timeout'   => 0.01,
+            'blocking'  => false,
+            'sslverify' => apply_filters('https_local_ssl_verify', false),
+        ]);
     }
 
      /**
@@ -210,14 +238,36 @@ class Omeda_Workflow_Manager {
         $this->add_to_workflow_log($post_id, $message, 'WARN');
     }
 
-    private function log_error($post_id, $error_message) {
-        $this->add_to_workflow_log($post_id, $error_message, 'ERROR');
-        error_log("Omeda Workflow Error (Post ID {$post_id}): {$error_message}");
+    private function log_error($post_id, $error_message, $context = null) {
+        // Check if the error message is a JSON string from our API client
+        $decoded_error = json_decode($error_message, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded_error)) {
+            // It's a structured error from our API client
+            $message = $decoded_error['summary'];
+            $context = [
+                'endpoint' => $decoded_error['endpoint'] ?? 'N/A',
+                'payload' => $decoded_error['payload'] ?? null,
+                'response_body' => $decoded_error['response_body'] ?? null
+            ];
+        } else {
+            // It's a standard text error message
+            $message = $error_message;
+        }
+
+        $this->add_to_workflow_log($post_id, $message, 'ERROR', $context);
+        error_log("Omeda Workflow Error (Post ID {$post_id}): {$message}");
     }
 
-    private function add_to_workflow_log($post_id, $message, $level) {
-        $timestamp = current_time('Y-m-d H:i:s');
-        $log_entry = "{$timestamp} [{$level}] {$message}";
-        add_post_meta($post_id, '_omeda_workflow_log', $log_entry);
+    private function add_to_workflow_log($post_id, $message, $level, $context = null) {
+        $log_entry = [
+            'timestamp' => current_time('Y-m-d H:i:s'),
+            'level' => $level,
+            'message' => $message,
+            'context' => $context
+        ];
+
+        // Store as a JSON string in post meta
+        add_post_meta($post_id, '_omeda_workflow_log', json_encode($log_entry));
     }
 }

@@ -80,12 +80,23 @@ class Omeda_API_Client {
             // Handle errors
             $error_message = sprintf('Omeda API Error (HTTP %d)', $response_code);
             $decoded_error = json_decode($response_body, true);
+
+            // Create a structured error object to be thrown in the exception
+            $error_details = [
+                'summary' => $error_message,
+                'endpoint' => $endpoint,
+                'payload' => $payload, // The original payload sent
+                'response_body' => $decoded_error ?? $response_body // The full decoded or raw response
+            ];
+
+            // Extract a cleaner summary if possible
             if (is_array($decoded_error) && isset($decoded_error['Errors'][0]['Error'])) {
-                 $error_message .= ': ' . $decoded_error['Errors'][0]['Error'];
+                $error_details['summary'] .= ': ' . $decoded_error['Errors'][0]['Error'];
             }
 
-            error_log('Omeda API Request Failed: ' . $error_message . ' | Endpoint: ' . $endpoint);
-            throw new Exception($error_message);
+            error_log('Omeda API Request Failed: ' . $error_details['summary'] . ' | Endpoint: ' . $endpoint);
+            // Throw the structured error as a JSON string
+            throw new Exception(json_encode($error_details));
         }
     }
 
@@ -160,16 +171,17 @@ class Omeda_API_Client {
         $user_id = $config['UserId'] ?? $this->default_user_id;
         $output_criteria = $config['OutputCriteria'] ?? get_option('omeda_default_output_criteria', 'Newsletter_Member_id');
 
+        // Per Omeda docs, for a single audience assignment, the query fields
+        // should be at the top level, not nested in an "Audience" array.
         $payload = [
-            "UserId"    => $user_id,
-            "TrackId"   => $track_id,
-            "Audience"  => [[
-                "QueryName"         => $config['QueryName'],
-                "OutputCriteria"    => $output_criteria,
-                "SplitNumber"       => 1,
-                "RemoveDuplicates"  => 1
-            ]]
+            "UserId"            => $user_id,
+            "TrackId"           => $track_id,
+            "QueryName"         => $config['QueryName'],
+            "OutputCriteria"    => $output_criteria,
+            "SplitNumber"       => 1,
+            "RemoveDuplicates"  => 1
         ];
+
         $this->send_request('omail/deployment/audience/add/*', 'POST', $payload);
     }
 
