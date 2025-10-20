@@ -1,68 +1,77 @@
-# Omeda Newsletter Connector Debugging Worklog
+# Omeda Newsletter Connector Debugging and Refactoring Worklog
 
-This document tracks the analysis, debugging, and resolution process for the issues outlined in `jules.md`.
+This document tracks the analysis, debugging, and resolution process for the issues and new requirements outlined in `jules.md` and subsequent discussions.
 
 ## Task Index
 
-1.  [WP-Cron Execution](#1-wp-cron-execution)
-2.  [Prerequisite Polling Logic](#2-prerequisite-polling-logic)
-3.  [API Payloads](#3-api-payloads)
-4.  [Error Handling & Logging](#4-error-handling--logging)
+1.  [Workflow Architecture](#1-workflow-architecture)
+2.  [API Payloads](#2-api-payloads)
+3.  [Error Handling & Logging](#3-error-handling--logging)
+4.  [New Feature Implementation](#4-new-feature-implementation)
+
 
 ---
 
-## 1. WP-Cron Execution
+## 1. Workflow Architecture
 
-*   **Task:** Investigate the reliability of `wp_schedule_single_event` and the `omeda_workflow_process_step` cron job in the `@wordpress/env` environment.
+*   **Task:** Investigate the reliability of the asynchronous, `WP-Cron`-based workflow and refactor it to meet new, multi-stage requirements.
 *   **Process:**
-    *   Identified that the default WP-Cron triggering mechanism, which relies on site traffic, is unreliable in a local, low-traffic development environment. This was a likely contributor to the asynchronous steps failing to execute.
+    *   Initially identified that the `WP-Cron` system was unreliable in the local development environment, contributing to the workflow stall.
+    *   Based on new requirements from the user, the decision was made to completely refactor the architecture, moving away from a cron-based system entirely.
 *   **Obstacles:**
     *   None.
 *   **Solution:**
-    *   Implemented a "cron-warming" (loopback) request to ensure cron jobs are triggered reliably.
-    *   **File Modified:** `src/omeda-newsletter-connector/includes/class-omeda-workflow-manager.php`
-    *   **Changes:** A new `trigger_cron_spawn()` method was added, which makes a non-blocking `wp_remote_post` call to the site's `wp-cron.php` URL. This method is now called immediately after an event is scheduled in `schedule_step`. This action forces the cron runner to check for due events, ensuring the asynchronous workflow proceeds promptly without needing external traffic. As a best practice, `wp_clear_scheduled_hook` was also added before scheduling a new event to prevent duplicates.
+    *   The entire asynchronous, cron-based workflow was removed from `Omeda_Workflow_Manager`.
+    *   A new, synchronous, multi-stage workflow was implemented using direct WordPress hooks (`save_post`, `transition_post_status`).
+    *   **Files Modified:** `src/omeda-newsletter-connector/includes/class-omeda-hooks.php`, `src/omeda-newsletter-connector/includes/class-omeda-workflow-manager.php`
+    *   **Changes:** The logic is now driven by post-state changes. `save_post` handles the initial deployment creation and subsequent content updates. `transition_post_status` handles the final scheduling and testing when a post is published. This new architecture is more reliable, easier to debug, and directly supports the new feature requirements.
 
 ---
 
-## 2. Prerequisite Polling Logic
+## 2. API Payloads
 
-*   **Task:** Review the `check_prerequisites` and `is_audience_ready` methods to determine if the reliance on the `RecipientCount` key is the cause of the workflow stall.
+*   **Task:** Scrutinize the payload construction for `step2_assign_audience`.
 *   **Process:**
-    *   Analyzed the logic in `is_audience_ready`. The approach of checking for the existence of the `RecipientCount` key is a valid strategy for determining if audience processing is complete.
-    *   Concluded that the workflow was stalling *before* this polling logic could even be a factor, as the initial call to assign the audience was failing.
+    *   Reviewed the `email-deployment-add-audience.md` API documentation.
+    *   Compared the documented payload structure with the code implementation.
 *   **Obstacles:**
     *   None.
 *   **Solution:**
-    *   No code changes were necessary for this part. The investigation confirmed that the polling logic was not the root cause of the stall. After fixing the API payload issue (see section 3), the existing polling logic now functions as intended.
-
----
-
-## 3. API Payloads
-
-*   **Task:** Scrutinize the payload construction for `step2_assign_audience` and other asynchronous steps to ensure they are not being rejected by the Omeda API.
-*   **Process:**
-    *   Reviewed the `email-deployment-add-audience.md` API documentation provided in the project's `docs/` folder.
-    *   Compared the documented payload structure for a *single audience assignment* with the implementation in `Omeda_API_Client::step2_assign_audience`.
-*   **Obstacles:**
-    *   None.
-*   **Solution:**
-    *   Discovered a critical mismatch. The code was wrapping the audience query details in an `"Audience": [{...}]` array, a format the Omeda API uses for submitting *multiple* audiences in a single call.
+    *   Discovered a critical mismatch in the payload for `step2_assign_audience`. The code was incorrectly nesting the data within an "Audience" array.
     *   **File Modified:** `src/omeda-newsletter-connector/includes/class-omeda-api-client.php`
-    *   **Changes:** The payload for `step2_assign_audience` was corrected to be a flat JSON object, placing `QueryName`, `OutputCriteria`, `SplitNumber`, etc., at the top level, as required by the documentation for a single audience. This was the primary bug causing the workflow to stall.
+    *   **Changes:** Corrected the payload to be a flat JSON object as required by the documentation. This was the root cause of the original workflow stall.
 
 ---
 
-## 4. Error Handling & Logging
+## 3. Error Handling & Logging
 
-*   **Task:** Improve logging in `Omeda_Workflow_Manager` and `Omeda_API_Client` to capture specific HTTP status codes and full API error responses from Omeda.
+*   **Task:** Improve logging to capture specific HTTP status codes and full API error responses, and format logs as JSON.
 *   **Process:**
-    *   Refactored the error handling in the API client to capture more context.
-    *   Refactored the logging methods in the workflow manager to store logs in a structured, exportable format as requested.
+    *   Refactored the `send_request` method in the API client to throw more detailed exceptions.
+    *   Updated the logging methods in the workflow manager to store structured JSON.
 *   **Obstacles:**
     *   None.
 *   **Solution:**
     *   **File Modified:** `src/omeda-newsletter-connector/includes/class-omeda-api-client.php`
-    *   **Changes:** The `send_request` method's `catch` block was updated to throw an exception containing a structured JSON string. This JSON includes the HTTP error, the API endpoint, the payload sent, and the full decoded error response from Omeda.
+    *   **Changes:** The `send_request` method now throws an exception containing a structured JSON string with the full API error context.
     *   **File Modified:** `src/omeda-newsletter-connector/includes/class-omeda-workflow-manager.php`
-    *   **Changes:** The `add_to_workflow_log` method was updated to store each log entry as a JSON object in the `_omeda_workflow_log` post meta. The `log_error` method can now parse the structured exception from the API client, providing rich, detailed error logs that include the full API response context.
+    *   **Changes:** The `add_to_workflow_log` method now stores each log entry as a JSON object. The `log_error` method can parse the detailed exception from the API client, providing rich, exportable debug logs. The meta box log display was also updated to parse and render this JSON.
+
+---
+
+## 4. New Feature Implementation
+
+*   **Task:** Implement the new multi-stage workflow, a settings-page delay, and a locking UI.
+*   **Process:**
+    *   Added a new field to the settings page.
+    *   Implemented the core logic for the new workflow in the refactored hook and manager classes.
+    *   Modified the post meta box to disable the deployment type selector after creation.
+*   **Obstacles:**
+    *   None.
+*   **Solution:**
+    *   **File Modified:** `src/omeda-newsletter-connector/includes/class-omeda-settings.php`
+    *   **Changes:** Added a new "Immediate Publish Delay (minutes)" field to the admin settings page.
+    *   **File Modified:** `src/omeda-newsletter-connector/includes/class-omeda-hooks.php`
+    *   **Changes:** The `render_meta_box` function now disables the deployment type `<select>` element and adds a descriptive message if a `track_id` exists for the post, effectively locking it.
+    *   **File Modified:** `src/omeda-newsletter-connector/includes/class-omeda-hooks.php`, `src/omeda-newsletter-connector/includes/class-omeda-workflow-manager.php`
+    *   **Changes:** The full logic for the new workflow (create on draft, update on save, schedule on publish) was implemented across these files.
