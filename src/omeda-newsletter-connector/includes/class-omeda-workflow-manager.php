@@ -84,10 +84,13 @@ class Omeda_Workflow_Manager {
         }
 
         try {
-            // Step 1: Send the test email
+            // Step 1: Update the content to ensure the latest version is used
+            $this->update_content($post_id, $track_id, $config_id);
+
+            // Step 2: Send the test email
             $this->send_test($post_id, $track_id, $config_id, false); // `false` to prevent duplicate logging
 
-            // Step 2: Schedule the deployment with the final, calculated date
+            // Step 3: Schedule the deployment with the final, calculated date
             $this->api_client->step5_schedule_deployment($track_id, $config);
             $this->log_status($post_id, "Deployment successfully scheduled for: {$config['ScheduleDate']} (UTC).");
             $this->log_status($post_id, 'Workflow Complete.');
