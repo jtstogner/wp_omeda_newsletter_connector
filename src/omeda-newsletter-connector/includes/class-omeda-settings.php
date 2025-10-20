@@ -53,6 +53,7 @@ class Omeda_Settings
         $this->register_setting_field('omeda_default_user_id', 'Default User ID (Owner/Approver)', 'render_text_field', 'omeda_deployment_defaults_section');
         $this->register_setting_field('omeda_default_mailbox', 'Default Mailbox', 'render_text_field', 'omeda_deployment_defaults_section', 'newsletters');
         $this->register_setting_field('omeda_default_output_criteria', 'Default Output Criteria', 'render_text_field', 'omeda_deployment_defaults_section', 'Newsletter_Member_id');
+        $this->register_setting_field('omeda_publish_delay', 'Immediate Publish Delay (minutes)', 'render_number_field', 'omeda_deployment_defaults_section', 30);
 
          // Workflow Configuration Section (Informational, as we now use polling)
         add_settings_section('omeda_workflow_section', 'Workflow Configuration', array($this, 'workflow_section_callback'), $this->option_group);
@@ -82,6 +83,13 @@ class Omeda_Settings
         $name = $args['field_name'];
         $value = get_option($name, $args['default']);
         printf('<input type="text" name="%s" value="%s" class="regular-text" />', esc_attr($name), esc_attr($value));
+    }
+
+    public function render_number_field($args)
+    {
+        $name = $args['field_name'];
+        $value = get_option($name, $args['default']);
+        printf('<input type="number" name="%s" value="%s" class="small-text" />', esc_attr($name), esc_attr($value));
     }
 
     public function render_environment_field($args)

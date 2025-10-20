@@ -16,152 +16,119 @@ class Omeda_Workflow_Manager {
     }
 
     public function init() {
-        // Register the single WP-Cron hook responsible for processing all steps
-        add_action(self::CRON_HOOK, array($this, 'process_step'), 10, 5);
+        // The old cron-based system is being replaced. No action needed here for now.
     }
 
     /**
-     * Initiates the workflow (Step 1).
+     * Creates the deployment and assigns the audience. Triggered on first draft save.
      */
-    public function initiate_workflow($post_id, $config_id) {
-        // Clear previous logs
+    public function create_and_assign_audience($post_id, $config_id) {
+        // Clear any previous logs for a clean start.
         delete_post_meta($post_id, '_omeda_workflow_log');
-        
-        // Ensure config ID is stored correctly before starting
-        update_post_meta($post_id, '_omeda_config_id', $config_id);
+        $this->log_status($post_id, 'Workflow Initiated: Post saved as draft with a Deployment Type.');
 
-        $config = $this->prepare_configuration($post_id, $config_id);
+        // Use a placeholder date far in the future. Omeda requires a date on creation.
+        // This will be updated to the real date when the post is scheduled/published.
+        $config = $this->prepare_configuration($post_id, $config_id, '2099-01-01 12:00');
         if (!$config) {
             $this->log_error($post_id, 'Failed to prepare configuration. Workflow aborted.');
-            return false;
+            return;
         }
 
         try {
-            // Step 1: Create Deployment (Synchronous)
+            // Step 1: Create the deployment
             $track_id = $this->api_client->step1_create_deployment($config);
-
-            // Store the TrackId
             update_post_meta($post_id, '_omeda_track_id', $track_id);
-            $this->log_status($post_id, 'Step 1 Complete (Create Deployment). TrackID: ' . $track_id);
+            $this->log_status($post_id, "Step 1/3 Complete: Deployment created with TrackID: {$track_id}");
 
-            // Schedule Step 2 (Asynchronous) with a slight initial delay
-            $this->schedule_step($post_id, $track_id, $config_id, 2, 0, 5);
-            return true;
+            // Step 2: Assign the audience
+            $this->api_client->step2_assign_audience($track_id, $config);
+            $this->log_status($post_id, 'Step 2/3 Complete: Audience assigned.');
+
+            // Step 3: Add the initial content
+            $this->update_content($post_id, $track_id, $config_id);
 
         } catch (Exception $e) {
-            $this->log_error($post_id, 'Step 1 Failed: ' . $e->getMessage());
-            return false;
+            $this->log_error($post_id, 'Initial deployment creation failed: ' . $e->getMessage());
         }
     }
 
     /**
-     * The main WP-Cron handler function.
+     * Updates the HTML content of an existing deployment.
      */
-    public function process_step($post_id, $track_id, $config_id, $current_step, $retry_count = 0) {
-        
-        // Safety check: Ensure the Track ID hasn't changed
-        $current_track_id_in_db = get_post_meta($post_id, '_omeda_track_id', true);
-        if ($current_track_id_in_db !== $track_id) {
+    public function update_content($post_id, $track_id, $config_id) {
+        $config = $this->prepare_configuration($post_id, $config_id);
+        if (!$config) {
+            $this->log_error($post_id, 'Could not prepare configuration for content update.');
             return;
+        }
+
+        try {
+            $this->api_client->step3_add_content($track_id, $config);
+            $this->log_status($post_id, 'Content updated successfully in Omeda.');
+        } catch (Exception $e) {
+            $this->log_error($post_id, 'Failed to update content in Omeda: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sends a test email and schedules the final deployment.
+     */
+    public function schedule_and_send_test($post_id, $track_id, $config_id) {
+        $this->log_status($post_id, 'Post Published/Scheduled. Finalizing deployment...');
+
+        $config = $this->prepare_configuration($post_id, $config_id);
+        if (!$config) {
+            $this->log_error($post_id, 'Could not prepare configuration for final scheduling.');
+            return;
+        }
+
+        try {
+            // Step 1: Send the test email
+            $this->send_test($post_id, $track_id, $config_id, false); // `false` to prevent duplicate logging
+
+            // Step 2: Schedule the deployment with the final, calculated date
+            $this->api_client->step5_schedule_deployment($track_id, $config);
+            $this->log_status($post_id, "Deployment successfully scheduled for: {$config['ScheduleDate']} (UTC).");
+            $this->log_status($post_id, 'Workflow Complete.');
+
+        } catch (Exception $e) {
+            $this->log_error($post_id, 'Failed to schedule or send test: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sends a test email for an existing deployment.
+     * @param bool $log_status Whether to write a standalone log entry for this action.
+     */
+    public function send_test($post_id, $track_id, $config_id, $log_status = true) {
+        if ($log_status) {
+            $this->log_status($post_id, 'Sending new test email due to post update...');
         }
 
         $config = $this->prepare_configuration($post_id, $config_id);
         if (!$config) {
-             $this->log_error($post_id, "Step {$current_step} failed: Configuration could not be reloaded.");
+            $this->log_error($post_id, 'Could not prepare configuration for sending test.');
             return;
         }
 
         try {
-            // 1. Check Prerequisites (Polling)
-            $is_ready = $this->check_prerequisites($track_id, $current_step);
-
-            if (!$is_ready) {
-                // 2. Handle "Not Ready" state
-                if ($retry_count >= self::MAX_RETRIES) {
-                    $this->log_error($post_id, "Step {$current_step} Failed: Max retries exceeded waiting for Omeda processing.");
-                    return;
-                }
-                // Reschedule this step using the POLLING_INTERVAL
-                $this->schedule_step($post_id, $track_id, $config_id, $current_step, $retry_count + 1, self::POLLING_INTERVAL);
-                $this->log_status($post_id, "Step {$current_step} waiting for Omeda. Retrying ({$retry_count}/" . self::MAX_RETRIES . ")...");
-                return;
-            }
-
-            // 3. Execute the Step
-            $this->execute_api_step($current_step, $track_id, $config);
-            $step_names = [2 => 'Assign Audience', 3 => 'Add Content', 4 => 'Send Test', 5 => 'Schedule Deployment'];
-            $this->log_status($post_id, "Step {$current_step} Complete ({$step_names[$current_step]}).");
-
-            // 4. Schedule the next step immediately
-            $next_step = $current_step + 1;
-            if ($next_step <= 5) {
-                $this->schedule_step($post_id, $track_id, $config_id, $next_step, 0, 0);
-            } else {
-                $this->log_status($post_id, 'Workflow Complete. Deployment Scheduled successfully.');
-            }
-
+            $this->api_client->step4_send_test($track_id, $config);
+            $this->log_status($post_id, 'Test email sent successfully.');
         } catch (Exception $e) {
-            $this->log_error($post_id, "Step {$current_step} Execution Failed: " . $e->getMessage());
+            // Log a warning instead of an error, as a failed test is not a critical workflow failure.
+            $this->log_warning($post_id, 'Failed to send test email (check Omeda tester configuration): ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Checks if the prerequisites for a given step are met by polling Omeda.
-     */
-    private function check_prerequisites($track_id, $step) {
-        switch ($step) {
-            case 2:
-                // Step 2 requires Step 1 to be complete (deployment exists).
-                return !is_null($this->api_client->get_deployment_lookup($track_id));
-            case 3:
-            case 4:
-            case 5:
-                // Steps 3, 4, and 5 require audience processing (Step 2) to be finished.
-                return $this->api_client->is_audience_ready($track_id);
-        }
-        return false;
-    }
-
-    /**
-     * Routes the step number to the corresponding API client method.
-     */
-    private function execute_api_step($step, $track_id, $config) {
-        switch ($step) {
-            case 2:
-                $this->api_client->step2_assign_audience($track_id, $config);
-                break;
-            case 3:
-                $this->api_client->step3_add_content($track_id, $config);
-                break;
-            case 4:
-                // Step 4 (Send Test)
-                try {
-                     $this->api_client->step4_send_test($track_id, $config);
-                } catch (Exception $e) {
-                    // Log a warning but continue the workflow, as the test might not be critical.
-                    $this->log_warning($config['PostId'], 'Step 4 (Send Test) failed (Check Omeda tester configuration): ' . $e->getMessage());
-                }
-                break;
-            case 5:
-                $this->api_client->step5_schedule_deployment($track_id, $config);
-                break;
-        }
-    }
-
-    /**
-     * Schedules the WP-Cron event.
-     */
-    private function schedule_step($post_id, $track_id, $config_id, $step, $retry_count, $delay_seconds) {
-        $timestamp = time() + $delay_seconds;
-        $args = array($post_id, $track_id, $config_id, $step, $retry_count);
-
-        wp_schedule_single_event($timestamp, self::CRON_HOOK, $args);
     }
 
      /**
      * Merges global settings, deployment type settings, and post data.
+     * @param int $post_id The ID of the WordPress post.
+     * @param int $config_id The ID of the Deployment Type configuration post.
+     * @param string|null $override_schedule_date Optional. A specific date string to use instead of the post's date.
+     * @return array|null The merged configuration array or null on failure.
      */
-    private function prepare_configuration($post_id, $config_id) {
+    private function prepare_configuration($post_id, $config_id, $override_schedule_date = null) {
         $post = get_post($post_id);
         if (!$post) return null;
 
@@ -171,12 +138,17 @@ class Omeda_Workflow_Manager {
 
         $config['PostId'] = $post_id;
 
-        // Determine Schedule Date (Use GMT/UTC for API consistency)
-        if ($post->post_status == 'future') {
-            $schedule_date = get_gmt_from_date($post->post_date, 'Y-m-d H:i');
+        if ($override_schedule_date) {
+            $schedule_date = $override_schedule_date;
         } else {
-            // Use [NOW] for immediate deployment if published
-            $schedule_date = '[NOW]';
+            // Determine Schedule Date (Use GMT/UTC for API consistency)
+            if ($post->post_status == 'future') {
+                $schedule_date = get_gmt_from_date($post->post_date, 'Y-m-d H:i');
+            } else {
+                // If it's an immediate publish, calculate the delayed time
+                $delay_minutes = (int) get_option('omeda_publish_delay', 30);
+                $schedule_date = gmdate('Y-m-d H:i', time() + ($delay_minutes * 60));
+            }
         }
 
         $config['ScheduleDate'] = $schedule_date;
@@ -210,14 +182,36 @@ class Omeda_Workflow_Manager {
         $this->add_to_workflow_log($post_id, $message, 'WARN');
     }
 
-    private function log_error($post_id, $error_message) {
-        $this->add_to_workflow_log($post_id, $error_message, 'ERROR');
-        error_log("Omeda Workflow Error (Post ID {$post_id}): {$error_message}");
+    private function log_error($post_id, $error_message, $context = null) {
+        // Check if the error message is a JSON string from our API client
+        $decoded_error = json_decode($error_message, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded_error)) {
+            // It's a structured error from our API client
+            $message = $decoded_error['summary'];
+            $context = [
+                'endpoint' => $decoded_error['endpoint'] ?? 'N/A',
+                'payload' => $decoded_error['payload'] ?? null,
+                'response_body' => $decoded_error['response_body'] ?? null
+            ];
+        } else {
+            // It's a standard text error message
+            $message = $error_message;
+        }
+
+        $this->add_to_workflow_log($post_id, $message, 'ERROR', $context);
+        error_log("Omeda Workflow Error (Post ID {$post_id}): {$message}");
     }
 
-    private function add_to_workflow_log($post_id, $message, $level) {
-        $timestamp = current_time('Y-m-d H:i:s');
-        $log_entry = "{$timestamp} [{$level}] {$message}";
-        add_post_meta($post_id, '_omeda_workflow_log', $log_entry);
+    private function add_to_workflow_log($post_id, $message, $level, $context = null) {
+        $log_entry = [
+            'timestamp' => current_time('Y-m-d H:i:s'),
+            'level' => $level,
+            'message' => $message,
+            'context' => $context
+        ];
+
+        // Store as a JSON string in post meta
+        add_post_meta($post_id, '_omeda_workflow_log', json_encode($log_entry));
     }
 }
