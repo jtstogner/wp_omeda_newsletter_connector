@@ -14,7 +14,8 @@
         "wp-content": "./wp-content"
     },
     "plugins": [
-        "./src/omeda-newsletter-connector"
+        "./src/omeda-newsletter-connector",
+        "./plugins/newsletter-glue-pro"
     ],
     "phpVersion": "8.0",
     "testsPort": 8889,

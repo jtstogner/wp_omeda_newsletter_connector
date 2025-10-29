@@ -191,6 +191,7 @@ class Omeda_API_Client {
         $mailbox = $config['MailboxName'] ?? get_option('omeda_default_mailbox', 'newsletters');
 
         $from_name = $config['FromName'];
+        $from_email = $config['FromEmail'];
         $subject = $config['Subject'];
         $reply_to = $config['ReplyTo'];
         $html_content = $config['HtmlContent'];
@@ -204,6 +205,7 @@ class Omeda_API_Client {
         <Split>
             <SplitNumber>1</SplitNumber>
             <FromName><![CDATA[{$from_name}]]></FromName>
+            <FromEmail>{$from_email}</FromEmail>
             <Mailbox>{$mailbox}</Mailbox>
             <Subject><![CDATA[{$subject}]]></Subject>
             <ReplyTo>{$reply_to}</ReplyTo>

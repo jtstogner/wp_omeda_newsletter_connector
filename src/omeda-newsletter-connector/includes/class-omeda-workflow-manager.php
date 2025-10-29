@@ -55,12 +55,15 @@ class Omeda_Workflow_Manager {
 
     /**
      * Updates the HTML content of an existing deployment.
+     * @param string|array|null $config Optional. The prepared configuration array. If null, it will be generated.
      */
-    public function update_content($post_id, $track_id, $config_id) {
-        $config = $this->prepare_configuration($post_id, $config_id);
+    public function update_content($post_id, $track_id, $config_id, $config = null) {
         if (!$config) {
-            $this->log_error($post_id, 'Could not prepare configuration for content update.');
-            return;
+            $config = $this->prepare_configuration($post_id, $config_id);
+            if (!$config) {
+                $this->log_error($post_id, 'Could not prepare configuration for content update.');
+                return;
+            }
         }
 
         try {
@@ -85,10 +88,10 @@ class Omeda_Workflow_Manager {
 
         try {
             // Step 1: Update the content to ensure the latest version is used
-            $this->update_content($post_id, $track_id, $config_id);
+            $this->update_content($post_id, $track_id, $config_id, $config);
 
             // Step 2: Send the test email
-            $this->send_test($post_id, $track_id, $config_id, false); // `false` to prevent duplicate logging
+            $this->send_test($post_id, $track_id, $config, false); // `false` to prevent duplicate logging
 
             // Step 3: Schedule the deployment with the final, calculated date
             $this->api_client->step5_schedule_deployment($track_id, $config);
@@ -102,16 +105,16 @@ class Omeda_Workflow_Manager {
 
     /**
      * Sends a test email for an existing deployment.
-     * @param bool $log_status Whether to write a standalone log entry for this action.
+     * @param array $config The prepared configuration array.
+     * @param bool  $log_status Whether to write a standalone log entry for this action.
      */
-    public function send_test($post_id, $track_id, $config_id, $log_status = true) {
+    public function send_test($post_id, $track_id, $config, $log_status = true) {
         if ($log_status) {
             $this->log_status($post_id, 'Sending new test email due to post update...');
         }
 
-        $config = $this->prepare_configuration($post_id, $config_id);
         if (!$config) {
-            $this->log_error($post_id, 'Could not prepare configuration for sending test.');
+            $this->log_error($post_id, 'Could not send test: Configuration was not provided.');
             return;
         }
 

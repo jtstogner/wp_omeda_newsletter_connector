@@ -137,7 +137,10 @@ class Omeda_Hooks {
 
             // Also, trigger a new test if the post is already published.
             if (get_post_status($post_id) === 'publish') {
-                $this->workflow_manager->send_test($post_id, $track_id, $config_id);
+                $config = $this->workflow_manager->prepare_configuration($post_id, $config_id);
+                if ($config) {
+                    $this->workflow_manager->send_test($post_id, $track_id, $config);
+                }
             }
         }
     }
