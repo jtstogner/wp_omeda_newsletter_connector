@@ -1,0 +1,131 @@
+.post-type-ngl_automation {
+
+	.ngl-automation-status {
+		margin: 10px 0 0;
+	}
+
+}
+
+.ngl-panel-row-sub {
+	margin: -18px 0 0 !important;
+	.components-button.is-link {
+		padding-top: 6px !important;
+		padding-bottom: 6px !important;
+		border: none !important;
+	}
+}
+
+body.post-type-ngl_log {
+	.wp-heading-inline:not(.ngl-heading-inline) {
+		display: none !important;
+	}
+}
+
+.ngl-muted,
+.ngl-neutral {
+	color: #999;
+}
+
+.ngl-regular {
+	color: #444;
+}
+
+.ngl-success {
+	color: #00A332;
+}
+
+.ngl-error {
+	color: #EF0000;
+}
+
+.ngl-admin-automation-mb {
+	.ngl-newsletter-sent.ngl-muted {
+		color: #00778D;
+	}
+	.ngl-top-msg {
+		justify-content: flex-start;
+	}
+	.ngl-msgbox-wrap {
+		padding-left: 60px !important;
+	}
+	.ngl-msg-contain {
+		min-width: 290px;
+	}
+	h3 {
+		display: none;
+	}
+	&.is-automating {
+		.ngl-metabox-automation-is-running {
+			display: none !important;
+		}
+	}
+	
+	&.is-automated {
+		.ngl-sending-box,
+		.ngl-dropdown-arrow,
+		.ngl-helper,
+		.ngl-metabox-test-email, 
+		.ngl-metabox-test-extras,
+		.ngl-metabox-flexfull {
+			display: none !important;
+		}
+		input[type=text],
+		.ui.dropdown.selection {
+			border: none !important;
+			padding: 0 !important;
+			cursor: default !important;
+			pointer-events: none !important;
+			height: auto;
+			min-height: 1px;
+		}
+		label {
+			cursor: default !important;
+			pointer-events: none !important;
+		}
+		.default.text {
+			margin: 0 !important;
+		}
+		.ngl-metabox .ui.selection.dropdown.multiple {
+			min-height: 1px;
+		}
+		.ngl-metabox-if-checked > .ngl-metabox-flex {
+			padding-top: 8px;
+			padding-bottom: 8px;
+		}
+		.ngl-metabox-header {
+			margin: 0;
+		}
+		.ngl-metabox.ngl-send {
+			max-width: 800px;
+			padding: 20px;
+		}
+		.ngl-field-multi {
+			column-gap: 5px;
+			margin: 0;
+		}
+		.ngl-field-multi .ui.selection.dropdown {
+			min-width: 1px;
+		}
+		.ngl-select-on {
+			line-height: 1;
+		}
+		.ngl-radio-group .field .ui.radio.checkbox label:before,
+		.ngl-radio-group .field .ui.radio.checkbox label:after {
+			display: none !important;
+		}
+		.ui.checkbox label, .ui.checkbox + label {
+			color: #222;
+		}
+		.ui.radio.checkbox .box, .ui.radio.checkbox label {
+			padding-left: 0;
+		}
+		.ngl-radio-group .choice-unchecked {
+			display: none !important;
+		}
+		h3 {
+			display: block;
+			padding-left: 20px;
+			color: #00778D;
+		}
+	}
+}

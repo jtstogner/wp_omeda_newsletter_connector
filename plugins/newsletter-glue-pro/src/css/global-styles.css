@@ -1,0 +1,244 @@
+.ngl-settings-theme,
+body.admin_page_ngl-theme #wpfooter {
+	display: none !important;
+}
+
+body.admin_page_ngl-theme #wpadminbar {
+	display: block !important;
+}
+
+body.admin_page_ngl-theme #adminmenumain {
+	padding-top: 0;
+}
+
+#ngl-global-styles {
+	display: flex;
+	margin-top: -32px;
+	margin-bottom: 50px;
+}
+
+#ngl-global-styles .editor-visual-editor {
+	background: #f0f0f0;
+}
+
+#ngl-global-styles .interface-interface-skeleton__header {
+	z-index: 300;
+}
+
+#ngl-global-styles .interface-interface-skeleton {
+	left: auto !important;
+	right: auto !important;
+	position: relative !important;
+	width: 100% !important;
+	margin: 0 22px !important;
+	top: auto !important;
+	bottom: auto !important;
+	border: 1px solid #e2e4e7 !important;
+}
+
+body.admin_page_ngl-theme #wpbody-content {
+	background: #f0f0f1;
+	padding: 0;
+}
+
+.ngl-email-preview-wrap {
+	max-width: 600px;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0 40px;
+}
+
+.ngl-email-preview-wrap.is-mobile-view {
+	max-width: 400px;
+}
+
+.ngl-email-preview {
+	min-height: 200px;
+	background: #fff;
+}
+
+.ngl-email-preview h1,
+.ngl-email-preview h2,
+.ngl-email-preview h3,
+.ngl-email-preview h4,
+.ngl-email-preview h5,
+.ngl-email-preview h6,
+.ngl-email-preview p {
+	margin: 0;
+	padding: 15px 0 0;
+	line-height: 1.5;
+}
+
+.ngl-setting-textarea .components-base-control__field,
+.ngl-setting-textarea textarea,
+.ngl-setting-textarea .components-base-control {
+	width: 100%;
+}
+
+.ngl-setting-textarea textarea {
+	border: 1px solid #eee;
+}
+
+#ngl-global-styles .nglue-group {
+	width: 100%;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-bottom: 0;
+	margin: 10px 0 25px;
+}
+
+#ngl-global-styles .editor-visual-editor__content-area {
+	height: 100%;
+}
+
+#ngl-global-styles .nglue-group .components-item {
+	padding: 0;
+}
+
+#ngl-global-styles .nglue-group .components-button {
+	appearance: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: none;
+    text-align: left;
+    padding: calc(9.2px) 12px;
+    width: 100%;
+    display: block;
+    margin: 0px;
+    color: inherit;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	height: auto;
+}
+
+#ngl-global-styles .nglue-group .components-button:hover {
+	color: var( --wp-admin-theme-color, #00669b);
+}
+
+#ngl-global-styles .nglue-group .components-button:focus {
+    background-color: transparent;
+    color: var( --wp-admin-theme-color, #00669b);
+    border-color: var( --wp-admin-theme-color, #00669b);
+    outline: transparent solid 3px;
+	box-shadow: none;
+}
+
+.nglue-box-control .components-base-control__field > div {
+	max-width: 100%;
+}
+
+#ngl-global-styles .edit-site-global-styles__color-indicator-wrapper {
+	width: auto;
+}
+
+#ngl-global-styles .components-navigator-back-button {
+	appearance: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: none;
+    text-align: left;
+    padding: calc(5.6px) calc(8.99955px);
+    width: 100%;
+    display: block;
+    margin: 0px;
+    color: inherit;
+	border-radius: 0;
+	box-shadow: none !important;
+	padding-right: 17px;
+	min-height: 37px;
+}
+
+#ngl-global-styles .components-navigator-back-button:focus {
+    background-color: transparent;
+    color: var( --wp-admin-theme-color, #00669b);
+    border-color: var( --wp-admin-theme-color, #00669b);
+    outline: transparent solid 3px;
+}
+
+#ngl-global-styles .components-color-palette__custom-color {
+	margin-bottom: 6px;
+}
+
+#ngl-global-styles .block-editor-color-gradient-control__color-indicator {
+	margin-bottom: 2px;
+}
+
+#ngl-global-styles .block-editor-color-gradient-control {
+	margin: 0 0 14px;
+}
+
+#ngl-global-styles .block-editor-color-gradient-control legend {
+	height: 10px;
+}
+
+#ngl-global-styles .components-circular-option-picker {
+	margin: 0;
+}
+
+.ngl-card-grid .edit-site-global-styles-variations_item {
+	min-height: 80px;
+	cursor: pointer;
+}
+
+.ngl-card-grid .edit-site-global-styles-variations_item-preview {
+	height: 100%;
+	position: relative;
+	display: flex;
+	padding: 10px !important;
+}
+
+.ngl-card-grid .edit-site-global-styles-inner {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ngl-card-grid .edit-site-global-styles-inner.is-vertical {
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: flex-start;
+	padding: 8px;
+}
+
+.ngl-style-name {
+	margin: 0;
+	font-size: 1.2em;
+}
+
+.ngl-style-tagline {
+	margin: 0;
+	font-size: 0.9em;
+}
+
+.ngl-style-colors {
+	display: flex;
+	width: 100%;
+	height: 5px;
+}
+
+.ngl-style-colors > div {
+	background: #ccc;
+	height: 100%;
+	flex-grow: 1;
+    flex-basis: 0;
+}
+
+.ngl-style-typo {
+	font-size: 24px;
+	margin: 0 10px;
+}
+
+.ngl-style-round {
+	margin: 0 10px;
+}
+
+.ngl-style-round-1,
+.ngl-style-round-2 {
+	width: 14px;
+	height: 14px;
+	border-radius: 14px;
+	background: #ccc;
+	margin: 6px 0;
+}

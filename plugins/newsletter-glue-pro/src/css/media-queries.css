@@ -1,0 +1,41 @@
+@media screen and (max-width: 980px) {
+
+	#nglue-welcome-wizard,
+	#nglue-template-wizard {
+		margin: 0 20px;
+	}
+
+	.nglue-header {
+		position: static;
+		align-items: center;
+		justify-content: center;
+		min-height: auto;
+		padding-top: 2rem;
+	}
+
+	.nglue-logo img {
+		max-height: 32px;
+	}
+
+	.ngl-wizard {
+		max-width: 500px;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 2rem;
+	}
+
+	.ngl-steps {
+		max-width: 500px;
+		width: 100%;
+	}
+
+}
+
+@media screen and (max-width: 700px) {
+
+	.ngl-wizard .ngl-wizard-flex .components-panel__row {
+		max-width: 100%;
+		width: 100%;
+	}
+
+}

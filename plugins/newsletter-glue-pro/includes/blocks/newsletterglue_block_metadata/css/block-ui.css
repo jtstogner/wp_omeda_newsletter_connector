@@ -1,0 +1,48 @@
+.ngl-metadata {
+	font-size: 12px;
+}
+
+.ngl-metadata > div {
+	padding: 0 2px;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.ngl-metadata .ngl-metadata-sep {
+	text-align: center;
+	width: 14px;
+	color: #aaa;
+}
+
+.ngl-metadata-map-pin {
+	width: 12px !important;
+	display: inline-block !important;
+	margin: 0 4px 0 0 !important;
+	position: relative !important;
+	top: 9px !important;
+	vertical-align: top !important;
+}
+
+.ngl-metadata-permalink-arrow {
+	display: none !important;
+	visibility: hidden !important;
+}
+
+.ngl-metadata-permalink {
+	text-decoration: underline !important;
+	cursor: pointer;
+}
+
+.ngl-metadata-pic {
+	width: 36px;
+	height: 36px;
+}
+
+.ngl-metadata-pic img {
+	width: 30px;
+	height: 30px;
+	border-radius: 999px;
+	margin: 0 6px 0 0;
+	position: relative;
+	top: 2px;
+}

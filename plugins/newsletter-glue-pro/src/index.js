@@ -1,0 +1,63 @@
+// CSS
+import './css/admin-wp.scss';
+import './css/admin.scss';
+import './css/automation.scss';
+import './css/backward.css';
+import './css/blocks.scss';
+import './css/editor.scss';
+import './css/forms.css';
+import './css/global-header.css';
+import './css/global-styles.css';
+import './css/media-queries.css';
+import './css/onboarding.css';
+import './css/settings.css';
+import './css/template-inserter.css';
+import './css/template-styles.scss';
+import './css/template-wizard.css';
+import './css/wizard.scss';
+
+// JS
+import './automation-templates';
+import './automations/status.js';
+import './global-styles';
+import './onboarding';
+import './settings';
+import './support';
+import './template-styles';
+import './template-wizard';
+import './templates';
+
+// Blocks
+import './blocks/button/index.js';
+import './blocks/buttons/index.js';
+import './blocks/container/index.js';
+import './blocks/embed/index.js';
+import './blocks/heading/index.js';
+import './blocks/html/index.js';
+import './blocks/image/index.js';
+import './blocks/ad-inserter/index.js'; 
+import './blocks/latest-posts/index.js';
+import './blocks/list-item/index.js';
+import './blocks/list/index.js';
+import './blocks/meta-data/index.js';
+import './blocks/optin/index.js';
+import './blocks/post-author/index.js';
+import './blocks/post-embeds/index.js';
+import './blocks/quote/index.js';
+import './blocks/section/index.js';
+import './blocks/sections/index.js';
+import './blocks/separator/index.js';
+import './blocks/showhide/index.js';
+import './blocks/social-icon/index.js';
+import './blocks/social-icons/index.js';
+import './blocks/spacer/index.js';
+import './blocks/table/index.js';
+import './blocks/text/index.js';
+
+// Hooks and filters
+import './hooks/global-controls.js';
+import './hooks/metabox.js';
+import './hooks/style.js';
+
+// Editor
+import './editor/index.js';

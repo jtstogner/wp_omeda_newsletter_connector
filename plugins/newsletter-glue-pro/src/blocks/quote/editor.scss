@@ -1,0 +1,18 @@
+.wp-block-newsletterglue-quote {
+
+	p {
+		margin: 0 0 10px !important;
+		font-family: inherit !important;
+		font-size: inherit !important;
+		line-height: inherit !important;
+		color: inherit !important;
+		&:last-child {
+			margin: 0 !important;
+		}
+	}
+
+	a {
+		text-decoration: underline !important;
+	}
+
+}

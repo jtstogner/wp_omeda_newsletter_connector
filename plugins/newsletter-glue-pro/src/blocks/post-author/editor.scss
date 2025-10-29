@@ -1,0 +1,16 @@
+.wp-block-newsletterglue-post-author {
+
+	.ng-div {
+		a {
+			text-decoration: underline !important;
+			box-shadow: none !important;
+		}
+		&.ng-block-button {
+			a {
+				text-decoration: none !important;
+				box-shadow: none !important;
+			}
+		}
+	}
+
+}

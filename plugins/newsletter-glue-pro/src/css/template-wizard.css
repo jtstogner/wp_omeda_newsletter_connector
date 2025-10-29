@@ -1,0 +1,26 @@
+body.admin_page_ngl-template-wizard #wpadminbar,
+body.admin_page_ngl-template-wizard #adminmenuback,
+body.admin_page_ngl-template-wizard #adminmenuwrap,
+body.admin_page_ngl-template-wizard #wpfooter,
+body.admin_page_ngl-template-wizard .notice {
+	display: none !important;
+}
+
+body.admin_page_ngl-template-wizard #wpcontent,
+body.admin_page_ngl-template-wizard #wpfooter {
+	margin: 0;
+}
+
+body.admin_page_ngl-template-wizard #wpcontent,
+body.admin_page_ngl-template-wizard #wpbody-content {
+	padding: 0;
+	float: none;
+}
+
+html.wp-toolbar body.admin_page_ngl-template-wizard {
+	margin-top: -32px;
+}
+
+#nglue-template-wizard {
+	padding: 0 0 1px;
+}

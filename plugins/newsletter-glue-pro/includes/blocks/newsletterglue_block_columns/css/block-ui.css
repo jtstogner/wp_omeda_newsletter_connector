@@ -1,0 +1,288 @@
+.ng_columns__container {
+	padding: 0;
+	display: flex;
+	flex-direction: row;
+}
+
+.ng_columns__container > .block-editor-inner-blocks {
+	width: 100%;
+}
+
+.ng_columns__container > .block-editor-inner-blocks > .block-editor-block-list__layout {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.ng_columns__container .wp-block.wp-block-newsletterglue-column {
+	box-sizing: border-box !important;
+}
+
+.ng_columns__container .ng__column {
+	box-sizing: border-box;
+}
+
+.ng__column .block-editor-block-list__layout > * {
+	margin-top: 0 !important;
+}
+
+.ng_columns__container .ng__column h1.wp-block,
+.ng_columns__container .ng__column h2.wp-block,
+.ng_columns__container .ng__column h3.wp-block,
+.ng_columns__container .ng__column h4.wp-block,
+.ng_columns__container .ng__column h5.wp-block,
+.ng_columns__container .ng__column h6.wp-block,
+.ng_columns__container .ng__column p.wp-block {
+	color: inherit;
+}
+
+.ng_columns__container__1 .wp-block-newsletterglue-column,
+.ng_columns__container__2 .wp-block-newsletterglue-column,
+.ng_columns__container__3 .wp-block-newsletterglue-column {
+	flex-basis: 50%;
+	flex-grow: 1;
+	flex-shrink: 0;
+}
+
+.ng_columns__container__1 .wp-block-newsletterglue-column {
+	flex-basis: 100%;
+}
+
+.ng_columns__container__3 .wp-block-newsletterglue-column {
+	flex-basis: 33.33%;
+}
+
+.ng_columns__container__2 .wp-block-newsletterglue-column:last-child {
+	display: none !important;
+}
+
+.ng_columns__container__1 .wp-block-newsletterglue-column:not(:first-child) {
+	display: none !important;
+}
+
+/* Selection */
+.ng_columns__select_heading {
+	font-size: 18px;
+	width: 100%;
+	padding: 25px 25px 15px 25px;
+	font-weight: 600;
+    color: #222;
+}
+
+.ng_columns__select_heading > div {
+	display: flex;
+}
+
+.ng_columns__select_heading > div span:first-child {
+	margin: 0 12px 0 0;
+}
+
+.ng_columns__select_heading > span {
+	font-size: 11px;
+	font-weight: 400;
+}
+
+.ng_columns__select {
+	flex-wrap: wrap;
+	flex-direction: row;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+.ng_columns__select .block-editor-inner-blocks {
+	display: none !important;
+}
+
+.ng_columns__select_options {
+	display: flex;
+    width: 100%;
+    align-items: center;
+	padding: 0 20px 20px 20px;
+	flex-wrap: wrap;
+}
+
+.ng_columns__select_options > div {
+	flex-basis: 100%;
+    margin: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+.ng_columns__select_options > span {
+	height: 50px;
+	background: #E2E2E2;
+	margin: 10px 5px 35px 5px;
+	cursor: pointer;
+	display: flex;
+	flex-basis: 18%;
+	position: relative;
+}
+
+.ng_columns__select_options > span:hover {
+	background: var(--wp-admin-theme-color);
+	color: var(--wp-admin-theme-color);
+}
+
+.ng_columns__select_options > span:after {
+	content: attr(data-layout);
+    font-size: 11px;
+    bottom: -25px;
+	position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.ng_columns__select_options span span {
+	border: 1px solid #fff;
+	box-sizing: border-box;
+	border-top: 0;
+	border-bottom: 0;
+}
+
+.ng_columns__1 span {
+	width: 100%;
+}
+
+.ng_columns__50_50 span {
+	width: 50%;
+}
+
+.ng_columns__60_40 span:first-child {
+	width: 60%;
+}
+.ng_columns__60_40 span:last-child {
+	width: 40%;
+}
+
+.ng_columns__40_60 span:first-child {
+	width: 40%;
+}
+.ng_columns__40_60 span:last-child {
+	width: 60%;
+}
+
+.ng_columns__70_30 span:first-child {
+	width: 70%;
+}
+.ng_columns__70_30 span:last-child {
+	width: 31%;
+}
+
+.ng_columns__80_20 span:first-child {
+	width: 80%;
+}
+.ng_columns__80_20 span:last-child {
+	width: 20%;
+}
+
+.ng_columns__20_80 span:first-child {
+	width: 20%;
+}
+.ng_columns__20_80 span:last-child {
+	width: 80%;
+}
+
+.ng_columns__90_10 span:first-child {
+	width: 90%;
+}
+.ng_columns__90_10 span:last-child {
+	width: 10%;
+}
+
+.ng_columns__10_90 span:first-child {
+	width: 10%;
+}
+.ng_columns__10_90 span:last-child {
+	width: 90%;
+}
+
+.ng_columns__30_70 span:first-child {
+	width: 31%;
+}
+.ng_columns__30_70 span:last-child {
+	width: 70%;
+}
+
+.ng_columns__33_33_33 span {
+	width: 33.34%;
+}
+
+.ng_columns__50_25_25 span {
+	width: 25%;
+}
+
+.ng_columns__50_25_25 span:first-child {
+	width: 50%;
+}
+
+.ng_columns__25_25_50 span {
+	width: 25%;
+}
+
+.ng_columns__25_25_50 span:last-child {
+	width: 50%;
+}
+
+.ng_columns__25_50_25 span {
+	width: 50%;
+}
+
+.ng_columns__25_50_25 span:first-child,
+.ng_columns__25_50_25 span:last-child {
+	width: 25%;
+}
+
+.ng_columns__60_20_20 span {
+	width: 20%;
+}
+
+.ng_columns__60_20_20 span:first-child {
+	width: 60%;
+}
+
+.ng_columns__20_20_60 span {
+	width: 20%;
+}
+
+.ng_columns__20_20_60 span:last-child {
+	width: 60%;
+}
+
+.ng_columns__20_60_20 span {
+	width: 60%;
+}
+
+.ng_columns__20_60_20 span:first-child,
+.ng_columns__20_60_20 span:last-child {
+	width: 20%;
+}
+
+.ngl-inspector .ng_columns__container {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+.ngl-inspector .ng_columns__container .ng_columns__select_options {
+	padding: 0;
+	justify-content: flex-start;
+}
+
+.ngl-inspector .ng_columns__container .components-base-control__field {
+	width: 100%;
+}
+
+.ngl-inspector .ng_columns__container .ng_columns__select_options > span {
+	height: 35px;
+	margin: 10px 10px 30px 0;
+	flex-basis: 28%;
+}
+
+.ngl-inspector .ng_columns__container .ng_columns__select_options span.ng_columns__active {
+	background-color: var(--wp-admin-theme-color) !important;
+	color: var(--wp-admin-theme-color) !important;
+}
+
+.ngl-inspector .ng_columns__select_options > div {
+	margin: 15px 0 0;
+}

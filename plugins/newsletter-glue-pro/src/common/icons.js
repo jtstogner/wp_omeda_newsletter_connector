@@ -1,0 +1,31 @@
+import React from 'react';
+import { SVG } from "@wordpress/primitives";
+
+export const iconInfo = <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm32 664c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V456c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272zm-32-344a48.01 48.01 0 0 1 0-96 48.01 48.01 0 0 1 0 96z"></path></svg>;
+
+export const iconCheck = <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path></svg>;
+
+export const iconLock = <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path></svg>;
+
+export const iconAdd = <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm90.5 224H272v74.5c0 8.8-7.2 16-16 16-4.4 0-8.4-1.8-11.3-4.7-2.9-2.9-4.7-6.9-4.7-11.3V272h-74.5c-4.4 0-8.4-1.8-11.3-4.7-2.9-2.9-4.7-6.9-4.7-11.3 0-8.8 7.2-16 16-16H240v-74.5c0-8.8 7.2-16 16-16s16 7.2 16 16V240h74.5c8.8 0 16 7.2 16 16s-7.2 16-16 16z"></path></svg>;
+
+export const iconIssue = <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path fill="none" d="M240 304h32l6-160h-44l6 160z"></path><path d="M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208 208-93.31 208-208S370.69 48 256 48zm20 319.91h-40v-40h40zM272 304h-32l-6-160h44z"></path></svg>;
+
+export const iconChevDown = <svg stroke="currentColor" fill="currentColor" strokeWidth="1" viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>;
+
+export const iconArrowRight = <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
+
+export const iconAlert = <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>;
+
+export const iconChevronDown = <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path></svg>;
+
+export const iconChevronUp = <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z"></path></svg>;
+
+export const ngIcon = <SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196.005 124.099" width={20} height={20} style={{width:'20px',height:'20px'}}>
+      <g transform="translate(0 0)">
+        <path d="M71.7,79.352l2.14-1.03a78.958,78.958,0,0,1-8.774-36.987q0-15.659,7.762-26.593C78,7.452,82.26,2.787,93.206.622s21.368,1.726,23.4,5.46S109,10.179,102.9,18.744s-6.309,9.32-9.7,18.068c-2.223,7.105-3.172,9.842-4.083,19.248-.428,9.314.821,14.809,2.941,24.421,2.335,9.378,4.273,13.454,7.153,17.684a42.2,42.2,0,0,1-10.934,5.4,46.312,46.312,0,0,1-12.891,1.485A30.365,30.365,0,0,1,50.553,92.7,51.629,51.629,0,0,1,43.6,78.861q-4.995-14.444-6.074-36.717h-2.16q-6.209,28.078-6.209,39.282t4.05,17.684q-8.1,6.074-16.874,6.074T3.78,100.122Q0,95.06,0,85c0-6.7,7.9-52.117,8.5-57.033S1.35,13.527,1.35,13.527q15.119-9.719,27-9.719T46.3,7.925a21.635,21.635,0,0,1,8.5,12.081,102.88,102.88,0,0,1,3.577,16.806q1.147,8.842,4.05,21.261C64.367,66.352,68.189,72.692,71.7,79.352Z" transform="translate(0 0)" fill="#0088A0"/>
+      </g>
+      <g transform="matrix(0.999, -0.035, 0.035, 0.999, 101.15, 3.897)">
+        <path d="M61.825,71.949,54.94,57.775q14.444-9.584,26.053-9.584,9.719,0,9.719,10.934,0,3.1-3.712,18.966t-3.712,24.231q0,8.369,3.645,12.419a26.362,26.362,0,0,1-15.794,5.535q-8.234,0-11.677-5.4T56.02,99.082a52.938,52.938,0,0,1-15.119,2.16q-18.359,0-29.63-11.339T0,56.425A50.071,50.071,0,0,1,4.05,37.189,64.331,64.331,0,0,1,15.524,19.033a55.835,55.835,0,0,1,19.371-13.7A59.994,59.994,0,0,1,59.6,0Q72.354,0,79.576,4.725A14.839,14.839,0,0,1,86.8,17.819q0,8.369-5.467,13.026A18.713,18.713,0,0,1,68.844,35.5a26.049,26.049,0,0,1-12.621-3.037,23.158,23.158,0,0,1-8.977-8.707q-7.289,3.51-12.554,13.769A46.41,46.41,0,0,0,29.428,58.99q0,11.2,4.387,16.806a13.44,13.44,0,0,0,11,5.6Q54.4,81.4,61.825,71.949Z" transform="translate(0 0)" fill="#0088A0"/>
+      </g>
+    </SVG>;
