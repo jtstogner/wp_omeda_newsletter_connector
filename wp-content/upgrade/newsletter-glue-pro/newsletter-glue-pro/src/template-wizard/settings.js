@@ -1,0 +1,1 @@
+export const settings = ['admin_name', 'admin_address', 'logo_id', 'logo_url', 'logo_width', 'instagram_url', 'tiktok_url', 'twitter_url', 'facebook_url', 'linkedin_url', 'twitch_url', 'youtube_url'];

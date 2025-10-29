@@ -1,0 +1,523 @@
+:root body.newsletterglue-ui {
+	--primary-ng-color: #0088A0;
+}
+
+#nglue-settings,
+.nglue-tabs,
+.newsletterglue-ui #wpbody-content,
+#ngl-global-styles .interface-interface-skeleton__header,
+#ngl-global-styles .interface-interface-skeleton__sidebar,
+#nglue-support {
+	--wp-admin-theme-color: #0088A0;
+	--wp-admin-theme-color-darker-10: #007489;
+	--wp-admin-theme-color-darker-20: #007489;
+	a:not(.components-button,.ngl-icon-link,.submitdelete),
+	.page-title-action,
+	.button:not(.ui),
+	.button-link {
+		color: var(--wp-admin-theme-color);
+		&:hover {
+			color: var(--wp-admin-theme-color-darker-10);
+		}
+		&:active {
+			color: var(--wp-admin-theme-color-darker-20);
+		}
+	}
+	.page-title-action,
+	.button {
+		border-color: var(--wp-admin-theme-color);
+		&:hover {
+			border-color: var(--wp-admin-theme-color-darker-10);
+		}
+		&:active {
+			border-color: var(--wp-admin-theme-color-darker-20);
+		}
+	}
+	.ngl-action .ui.primary.button {
+		background-color: var(--wp-admin-theme-color);
+		&:hover {
+			background-color: var(--wp-admin-theme-color-darker-10);
+		}
+		&:active {
+			background-color: var(--wp-admin-theme-color-darker-20);
+		}
+	}
+	.button.ngl-pattern-reset-start {
+		color: #fff !important;
+	}
+}
+
+.post-type-newsletterglue,
+.post-type-ngl_automation,
+.post-type-ngl_pattern,
+.post-type-ngl_template,
+body.newsletterglue-ui {
+
+	div.editor-styles-wrapper .is-root-container .block-editor-block-list__block.wp-block.block-library-block__reusable-block-container {
+		padding: 0 !important;
+	}
+
+	.components-range-control__root {
+		.components-range-control__number {
+			flex-basis: 20%;
+		}
+	}
+
+	.ng-mobile-control {
+		.block-editor-image-size-control {
+			.components-h-stack:last-child {
+				display: none !important;
+			}
+		}
+	}
+
+	.ngl-tag-insert-help {
+		a {
+			margin: 0 5px 0 0;
+			color: #777;
+		}
+	}
+
+	.block-editor-block-inspector {
+		.components-base-control {
+			margin-top: 0;
+		}
+		.components-panel__body {
+			> .components-base-control {
+				margin: 0 0 20px;
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+
+	.kadence-toolbar-design-library,
+	button.components-button[aria-label="Kadence Blocks Controls"],
+	button.components-button[aria-label="Otter Options"] {
+		display: none !important;
+	}
+
+	.ngl-error {
+		font-size: 12px;
+		font-weight: 700;
+	}
+
+	.ngl-search-dd {
+		width: 100%;
+		background: #fff;
+		border: 1px solid #e1eced;
+		border-radius: 5px;
+		margin-bottom: 15px;
+		color: #666;
+		> button {
+			cursor: pointer;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+    		line-height: 1.5;
+    		padding: 8px 12px;
+    		height: auto;
+    		min-height: 0px;
+    		&:not(:last-child) {
+    			border-bottom: 1px solid #f9f9f9;
+    		}
+    		> div {
+    			text-align: left;
+    		}
+			> span {
+				height: 24px;
+			    display: flex;
+			    align-items: center;
+			}
+			svg {
+				fill: var(--wp-admin-theme-color);
+			}
+		}
+	}
+
+	.ngl-combobox {
+		margin-bottom: 0 !important;
+		> .components-base-control__field {
+			display: flex;
+			justify-content: space-between;
+			column-gap: 10px;
+			margin-bottom: 0 !important;
+			> div {
+				flex-basis: 80%;
+			}
+			> button {
+				flex-basis: 20%;
+				justify-content: center;
+				align-items: center;
+			}
+		}
+		.components-text-control__input {
+			height: 36px;
+			border: 1px solid #728a8d;
+			border-radius: 5px;
+		}
+	}
+
+	.color-block-support-panel__inner-wrapper {
+		button.block-editor-panel-color-gradient-settings__dropdown {
+			border: none;
+		}
+	}
+
+	.ng-sortable-area {
+		margin: 10px 0;
+		.ng-sortable-control {
+			background: #fff;
+		    border: 1px solid #728a8d;
+		    border-top: none;
+		    padding: 10px 15px;
+		    display: none;
+			border-radius: 0 0 5px 5px;
+		    &.opened {
+		    	display: block;
+		    }
+		    > .components-base-control {
+		    	margin: 10px 0;
+		    	padding: 0;
+		    }
+		}
+		.ng-sortable-item {
+			display: flex;
+	    	background: #fff;
+	    	border: 1px solid #728a8d;
+    		border-radius: 4px;
+    		align-items: center;
+    		min-height: 40px;
+	    	&:hover,
+	    	&.opened {
+				background-color: #fbfbfb;
+			}
+			&.opened {
+				border-bottom: 1px solid #728a8d;
+				border-radius: 5px 5px 0 0;
+			}
+			&.hidden {
+				.ng-sortable-label,
+				.ng-sortable-handle {
+					color: #939393;
+				}
+				.ng-sortable-label {
+					&.is-underlined {
+						text-decoration: none;
+						cursor: default;
+					}
+				}
+			}
+			&.disabled {
+				.ng-sortable-label {
+					padding-left: 15px;
+		    	}
+			}
+	    	.ng-sortable-handle {
+	    		display: flex;
+	    		flex-basis: 15%;
+	    		min-width: 15%;
+			    justify-content: center;
+			    align-self: center;
+			    padding: 9px 0;
+			    cursor: move;
+			    svg {
+			    	width: 20px;
+			    	height: 20px;
+			    	fill: currentColor;
+			    }
+	    	}
+	    	.ng-sortable-label {
+				flex-grow: 0;
+				cursor: default;
+				display: flex;
+	    		align-items: center;
+	    		&.is-underlined {
+	    			text-decoration: underline;
+	    			cursor: pointer;
+	    		}
+	    		&.ng-sortable-label-limit {
+	    			width: auto;
+				    white-space: nowrap;
+				    text-overflow: ellipsis;
+				    overflow: hidden;
+				    display: block;
+				    padding: 0 5px 0 0;
+	    		}
+	    	}
+	    	button.ng-sortable-button {
+	    		height: auto;
+			    justify-content: center;
+			    padding: 8px 5px;
+			    border-left: 0;
+			    border-radius: 0;
+			    min-width: 30px;
+			    &:last-child {
+			    	margin-left: auto;
+			    	border-left: 1px solid hsl(0, 0%, 80%);
+			    	flex-basis: 18%;
+			    	min-width: 18%;
+			    	padding: 0px 5px;
+			    	height: 30px;
+			    }
+	    	}
+		}
+	}
+
+	.ngl-base--flex {
+		.components-base-control__field {
+			display: flex;
+			align-items: center;
+			button {
+				text-decoration: none;
+				margin: 0 10px 0 0;
+				&.is-destructive {
+					text-decoration: underline;
+					margin: 0;
+				}
+			}
+		}
+	}
+
+	.ng-sortable {
+		.components-base-control {
+			margin: 0 !important;
+			padding: 8px 0;
+			cursor: default;
+			& label {
+				cursor: default;
+				pointer-events: none;
+			}
+		}
+		.ng-drag-handle {
+			cursor: move;
+			padding: 5px 0;
+		}
+	}
+	.wp-block-newsletterglue-embed {
+		a {
+			text-decoration: none;
+		}
+	}
+
+	.ng-block-group-title {
+		font-weight: 500;
+		margin: 10px 0;
+	}
+
+	.ng-block-grouped {
+		display: flex;
+		flex-wrap: wrap;
+		.ng__column_option {
+			height: 50px;
+			flex-basis: 28%;
+			margin: 8px 10px 30px 0;
+			cursor: pointer;
+			display: flex;
+			position: relative;
+			span {
+				border: 1px solid #fff;
+			    box-sizing: border-box;
+			    border-top: 0;
+			    border-bottom: 0;
+			    display: block;
+			    height: 100%;
+			    background: #E2E2E2;
+			}
+			&:after {
+			    content: attr(data-layout);
+			    font-size: 11px;
+			    bottom: -25px;
+			    position: absolute;
+			    left: 0;
+			    width: 100%;
+			    text-align: center;
+			}
+			&.ng__column_option_active {
+				span { background: var(--primary-ng-color); }
+			}
+			&:hover, &:focus {
+				span { background: var(--primary-ng-color); }
+			}
+		}
+	}
+
+	.wp-block-newsletterglue-image {
+		.components-placeholder {
+			min-height: auto;
+			padding: 20px;
+		    &.has-illustration {
+				transition: none !important;
+				.components-button,
+				.components-placeholder__instructions,
+				.components-placeholder__label {
+					transition: none;
+				}
+			}
+		}
+	}
+
+	.wp-block-newsletterglue-image.is-selected {
+		.components-placeholder .components-placeholder__illustration.components-placeholder__illustration {
+			display: none;
+		}
+		.components-placeholder {
+		    background-color: #fff;
+		    border: none;
+		    border-radius: 2px;
+		    box-shadow: inset 0 0 0 1px #1e1e1e;
+		    color: #1e1e1e;
+		    filter: none;
+		    &.has-illustration {
+				transition: none !important;
+				&:before {
+					background: #fff;
+				}
+				.components-button,
+				.components-placeholder__instructions,
+				.components-placeholder__label {
+					opacity: 1;
+					pointer-events: auto;
+					transition: none;
+				}
+			}
+		}
+	}
+
+	.ngl-input-small {
+		.components-input-control__container {
+			width: 100px;
+		}
+	}
+
+	.block-editor-inserter__tips {
+		display: none;
+	}
+
+	h1,h2,h3,h4,h5,h6 {
+		text-transform: none;
+	}
+
+	&.block-editor-iframe__body {
+		background-color: inherit;
+	}
+
+	.block-library-spacer__resize-container.has-show-handle, .wp-block-spacer.is-hovered .block-library-spacer__resize-container {
+		background: transparent;
+	}
+
+	.is-mobile-preview {
+		margin-left: auto !important;
+	 	margin-right: auto !important;
+	 	border: none !important;
+	}
+
+	.is-tablet-preview {
+		border: none !important;
+		max-width: 600px !important;
+		box-sizing: border-box !important;
+	}
+
+	.is-layout-constrained > * + * {
+		margin: 0 !important;
+	}
+
+	.ng-block {
+		margin: 0;
+		blockquote {
+			margin: 0;
+			cite {
+				font-style: normal;
+			}
+		}
+		&.alignleft,
+		&.alignright {
+			float: none;
+		}
+		&.wp-block-newsletterglue-image {
+			img {
+				display: block;
+				height: inherit;
+				width: inherit;
+			}
+		}
+	}
+
+	.components-button {
+		&.ng-component-button {
+		    height: auto;
+		    padding: 4px 12px;
+		}
+		&.ng-clear-color {
+			position: relative;
+	    	bottom: 50px;
+	    	left: 80%;
+		}
+	}
+
+	.block-editor-default-block-appender__content {
+		padding: 8px 20px 0px 20px;
+		margin: 0;
+		line-height: 1.6;
+	}
+
+	.block-editor-block-list__empty-block-inserter.block-editor-block-list__empty-block-inserter,
+	.block-editor-default-block-appender .block-editor-inserter {
+		top: 0;
+	    right: 0;
+	    height: 100%;
+	    display: flex;
+	    align-items: center;
+	    justify-content: center;
+	    margin-right: 10px;
+	}
+
+	.editor-visual-editor__post-title-wrapper {
+		opacity: 0 !important;
+		pointer-events: none;
+		display: none !important;
+	}
+
+	div.editor-styles-wrapper .is-root-container .wp-block {
+		margin-top: 0 !important;
+		margin-bottom: 0 !important;
+		&.block-list-appender {
+			margin-bottom: 0 !important;
+			padding: 0 !important;
+			margin-top: 0px !important;
+		}
+	}
+
+	div.editor-styles-wrapper {
+		padding: 1px 0 60px !important;
+	}
+
+	.block-editor-block-list__layout.is-root-container,
+	.editor-visual-editor__content-area .editor-styles-wrapper > .is-root-container {
+		padding: 0;
+	}
+
+	.ng-sidebar-panel {
+		.components-panel__row {
+			padding: 0 0 20px;
+			margin: 0;
+			&:last-child {
+				padding: 0 0 10px;
+			}
+		}
+		.components-base-control {
+			width: 100%;
+		}
+	}
+
+}
+
+table.ng-block {
+	.ng-block-td {
+		h1,h2,h3,h4,h5,h6 {
+			text-transform: none;
+		}
+	}
+}

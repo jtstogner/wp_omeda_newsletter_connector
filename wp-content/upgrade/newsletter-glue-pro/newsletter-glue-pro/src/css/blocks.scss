@@ -1,0 +1,244 @@
+.ngl-gb-box {
+	padding: 20px 0 0;
+	h2 {
+		display: flex;
+		align-items: center;
+		svg {
+			margin-right: 4px;
+			width: 18px;
+			height: 18px;
+		}
+	}
+	.ngl-gb-box-div {
+		margin: 0 0 12px;
+	}
+	.components-button {
+	    width: 100%;
+		text-align: center;
+		align-items: center;
+		justify-content: center;
+		font-weight: 500;
+	}
+}
+
+.ngl-panel-body {
+
+	.components-base-control__help {
+		color: #666;
+		font-size: 12px;
+		margin-bottom: 8px;
+		a {
+			color: #666;
+		}
+	}
+
+	.ngl-select-flex {
+		display: flex;
+		width: 100%;
+		column-gap: 10px;
+		> div {
+			flex-basis: 50%;
+			flex-grow: 1;
+		}
+	}
+
+	.components-base-control {
+		width: 100%;
+		margin-bottom: 4px !important;
+		margin-top: 0px !important;
+		.components-button-group {
+			display: flex;
+			width: 100%;
+			button {
+				flex-basis: auto;
+				width: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+		}
+	}
+
+	.ng-sortable-control {
+		.components-base-control {
+			margin-bottom: 10px !important;
+		}
+	}
+
+	.ngl__input input[type=text] {
+		box-shadow: none !important;
+	}
+
+	.ngl__value-container {
+		padding: 0 8px;
+	}
+
+	div.ngl__control,
+	div.ngl__control:hover {
+		border: 1px solid #728a8d;
+	}
+
+	div.ngl__control.ngl__control--is-focused {
+		box-shadow: 0 0 0 1px var(--wp-admin-theme-color);
+		border-color: var(--wp-admin-theme-color);
+	}
+
+	div.ngl__control.ngl__control--is-disabled {
+		background: #fff;
+		opacity: 0.7;
+	}
+
+	div.ngl__option--is-selected,
+	div.ngl__option--is-selected:active {
+		background-color: var(--wp-admin-theme-color);
+	}
+
+	div.ngl__option--is-disabled {
+		color: #aaa;
+		border-top: 1px solid #eee;
+		padding-top: 10px;
+		margin-top: 10px;
+	}
+
+	div.ngl__control .ngl__input input {
+		margin: 0;
+		box-shadow: none;
+	}
+
+	div.ngl__control div.ngl__value-container--is-multi {
+		padding: 0 8px;
+	}
+
+	.ngl__menu {
+		z-index: 2;
+	}
+
+	div.ngl__multi-value__label {
+		font-size: 0.8rem;
+	}
+
+	.components-toggle-control .components-base-control__field {
+		line-height: 16px;
+	}
+
+	.ngl-radio-as-child {
+		margin: 8px 0 0 0;
+		font-size: 0.9em;
+		.components-radio-control__option:not(:last-child) {
+			margin-bottom: 8px;
+		}
+		.components-radio-control__input[type=radio] {
+			margin-right: 12px;
+		}
+	}
+
+	.ngl-input-as-child {
+		margin: 14px 0 0 0;
+		font-size: 12px;
+	}
+
+	.components-panel__row {
+		min-height: auto;
+	}
+
+	.nglue-group {
+		width: 100%;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-bottom: 0;
+		margin: 10px 0 25px;
+	}
+
+	.nglue-group .components-item {
+		padding: 0;
+	}
+
+	.nglue-group .components-button {
+		appearance: none;
+		border: 1px solid transparent;
+		cursor: pointer;
+		background: none;
+		text-align: left;
+		padding: calc(9.2px) 12px;
+		width: 100%;
+		display: block;
+		margin: 0px;
+		color: inherit;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+		height: auto;
+	}
+
+	.nglue-group .components-button:hover {
+		color: var( --wp-admin-theme-color, #00669b);
+	}
+
+	.nglue-group .components-button:focus {
+		background-color: transparent;
+		color: var( --wp-admin-theme-color, #00669b);
+		border-color: var( --wp-admin-theme-color, #00669b);
+		outline: transparent solid 3px;
+		box-shadow: none;
+	}
+
+	.nglue-box-control .components-base-control__field > div {
+		max-width: 100%;
+	}
+
+	.edit-site-global-styles__color-indicator-wrapper {
+		width: auto;
+	}
+
+	.components-navigator-back-button {
+		appearance: none;
+		border: 1px solid transparent;
+		cursor: pointer;
+		background: none;
+		text-align: left;
+		padding: calc(5.6px) calc(8.99955px);
+		width: 100%;
+		display: block;
+		margin: 0px;
+		color: inherit;
+		border-radius: 0;
+		box-shadow: none !important;
+		padding-right: 17px;
+		min-height: 37px;
+	}
+
+	.components-navigator-back-button:focus {
+		background-color: transparent;
+		color: var( --wp-admin-theme-color, #00669b);
+		border-color: var( --wp-admin-theme-color, #00669b);
+		outline: transparent solid 3px;
+	}
+
+	.components-color-palette__custom-color {
+		margin-bottom: 6px;
+	}
+
+	.block-editor-color-gradient-control__color-indicator {
+		margin-bottom: 2px;
+	}
+
+	.block-editor-color-gradient-control {
+		margin: 0 0 14px;
+	}
+
+	.block-editor-color-gradient-control legend {
+		height: 10px;
+	}
+
+	.components-circular-option-picker {
+		margin: 0;
+	}
+
+	.ngl-cond .components-card:first-of-type .components-card-body > .components-base-control:last-of-type {
+		display: block;
+	}
+
+}
+
+button[class*="editor-block-list-item-newsletterglue-"] {
+	svg {
+
+	}
+}

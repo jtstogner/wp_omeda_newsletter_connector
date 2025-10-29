@@ -1,0 +1,120 @@
+<?php
+
+class NGL_Moosend_API {
+
+    const API_BASE_URL 			= 'https://api.moosend.com/v3';
+    const HTTP_METHOD_GET 		= 'GET';
+    const HTTP_METHOD_POST 		= 'POST';
+	const HTTP_METHOD_PUT 		= 'PUT';
+	const HTTP_METHOD_DELETE 	= 'DELETE';
+
+    private $api_key;
+    private $lastResponseCode;
+
+    /**
+     * constructor.
+     */
+    public function __construct( $api_key ) {
+        $this->api_key = $api_key;
+    }
+
+    /**
+     * @param $endpoint
+     * @param array $parameters
+     * @return mixed
+     */
+    public function get( $endpoint, $parameters = [] ) {
+        if ( $parameters ) {
+            foreach ( $parameters as $key => $parameter ) {
+                if ( is_bool( $parameter ) ) {
+                    // http_build_query converts bool to int
+                    $parameters[ $key ] = $parameter ? 'true' : 'false';
+                }
+            }
+            $endpoint .= '?' . http_build_query( $parameters );
+        }
+        return $this->makeHttpRequest( self::HTTP_METHOD_GET, $endpoint );
+    }
+
+    /**
+     * @param $endpoint
+     * @param array $data
+     * @return mixed
+     */
+    public function post($endpoint, $data = []) {
+        return $this->makeHttpRequest( self::HTTP_METHOD_POST, $endpoint, $data );
+    }
+
+    /**
+     * @param $endpoint
+     * @param array $data
+     * @return mixed
+     */
+    public function put($endpoint, $data = []) {
+        return $this->makeHttpRequest( self::HTTP_METHOD_PUT, $endpoint, $data );
+    }
+
+    /**
+     * @param $method
+     * @param $endpoint
+     * @param array $body
+     * @return mixed
+     */
+    private function makeHttpRequest( $method, $endpoint, $body = [] ) {
+		$endpoint = $endpoint . '.json';
+        $url = self::API_BASE_URL . $endpoint;
+
+        $args = [
+			'timeout' => 3,
+            'method'  => $method,
+            'headers' => [
+				'Content-Type' 	=> 'application/json',
+				'Accept'		=> 'application/json',
+            ],
+        ];
+
+        if ( $method != self::HTTP_METHOD_GET && $method != self::HTTP_METHOD_DELETE ) {
+			$args[ 'body' ] = wp_json_encode( $body );
+        }
+
+		$url = add_query_arg( 'apikey', $this->api_key, $url );
+
+		$response = wp_remote_request( $url, $args );
+		$this->lastResponseCode = wp_remote_retrieve_response_code($response);
+
+        if ( is_wp_error( $response ) ) {
+			$data = [
+				'code' => $response->get_error_code(),
+				'message' => $response->get_error_message()
+            ];
+        } else {
+			$data = json_decode( wp_remote_retrieve_body( $response ), true );
+        }
+
+		if ( $endpoint === '/campaigns/create.json' ) {
+			return $data;
+		}
+
+		if ( strstr( $endpoint, 'send' ) ) {
+			return $data;
+		}
+
+		if ( isset( $data[ 'Code' ] ) ) {
+			if ( $data[ 'Code' ] > 0 ) {
+				return false;
+			} else {
+				return $data;
+			}
+		}
+
+        return false;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLastResponseCode() {
+        return $this->lastResponseCode;
+    }
+
+}

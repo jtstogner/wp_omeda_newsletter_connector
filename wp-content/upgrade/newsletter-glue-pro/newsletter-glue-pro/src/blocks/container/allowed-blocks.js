@@ -1,0 +1,25 @@
+const blocks = [
+  'newsletterglue/container',
+  'newsletterglue/text',
+  'newsletterglue/buttons',
+  'newsletterglue/heading',
+  'newsletterglue/html',
+  'newsletterglue/image',
+  'newsletterglue/list',
+  'newsletterglue/quote',
+  'newsletterglue/spacer',
+  'newsletterglue/embed',
+  'newsletterglue/meta-data',
+  'newsletterglue/optin',
+  'newsletterglue/post-author',
+  'newsletterglue/post-embeds',
+  'newsletterglue/latest-posts',
+  'newsletterglue/sections',
+  'newsletterglue/separator',
+  'newsletterglue/showhide',
+  'newsletterglue/social-icons',
+  'newsletterglue/table',
+  'newsletterglue/ad-inserter',
+];
+
+export const allowedBlocks = blocks;

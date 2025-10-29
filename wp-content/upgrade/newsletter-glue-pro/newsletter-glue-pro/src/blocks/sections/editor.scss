@@ -1,0 +1,30 @@
+.wp-block-newsletterglue-sections {
+
+	.components-placeholder {
+		min-height: auto;
+		.ng-block-grouped {
+			.ng__column_option {
+				flex-basis: 18%;
+			}
+		}
+	}
+
+	form {
+		display: block;
+	}
+
+}
+
+.block-editor-block-list__layout {
+	.wp-block-newsletterglue-sections {
+		&.is-stacked-on-mobile {
+			td.wp-block-newsletterglue-section:not(.ng-should-remove) {
+				display: block !important;
+				float: none !important;
+				width: 100% !important;
+				clear: both !important;
+				box-sizing: border-box !important;
+			}
+		}
+	}
+}

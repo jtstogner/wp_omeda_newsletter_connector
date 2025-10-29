@@ -16,11 +16,20 @@ class Omeda_Hooks {
         // It needs a higher priority (lower number) to run before potential redirects.
         add_action('save_post', array($this, 'handle_post_save'), 5, 1);
         add_action('transition_post_status', array($this, 'handle_status_transition'), 10, 3);
+
+        // AJAX handlers for manual actions
+        add_action('wp_ajax_omeda_send_test', array($this, 'ajax_send_test'));
+        add_action('wp_ajax_omeda_schedule_deployment', array($this, 'ajax_schedule_deployment'));
+        add_action('wp_ajax_omeda_unschedule_deployment', array($this, 'ajax_unschedule_deployment'));
+
+        // Enqueue scripts for admin
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
 
     private function get_supported_post_types() {
         // Define which post types this integration supports
-        return ['post'];
+        // 'post' for regular posts, 'newsletterglue' for Newsletter Glue campaigns
+        return ['post', 'newsletterglue'];
     }
 
     public function register_meta_boxes() {
@@ -42,6 +51,22 @@ class Omeda_Hooks {
         $track_id = get_post_meta($post->ID, '_omeda_track_id', true);
         $workflow_logs = get_post_meta($post->ID, '_omeda_workflow_log');
         $is_locked = !empty($track_id);
+        $deployment_ready = get_post_meta($post->ID, '_omeda_deployment_ready', true);
+        $test_sent = get_post_meta($post->ID, '_omeda_test_sent', true);
+        $is_scheduled = get_post_meta($post->ID, '_omeda_deployment_scheduled', true);
+        $schedule_date = get_post_meta($post->ID, '_omeda_schedule_date', true);
+
+        // Try to auto-detect deployment type based on post type/template
+        $auto_detected_config = null;
+        if (empty($selected_config_id)) {
+            $auto_detected_config = Omeda_Deployment_Types::find_config_for_post($post->ID);
+            if ($auto_detected_config) {
+                echo '<div class="notice notice-info inline"><p>';
+                echo '<strong>Auto-detected:</strong> This post type/template is configured to use: ';
+                echo '<strong>' . esc_html(get_the_title($auto_detected_config)) . '</strong>';
+                echo '</p></div>';
+            }
+        }
 
         // Fetch available Deployment Types
         $deployment_types = get_posts([
@@ -56,12 +81,14 @@ class Omeda_Hooks {
         // Lock the select field if a TrackId is present
         printf('<select name="_omeda_config_id" id="_omeda_config_id" style="width: 100%%;" %s>', $is_locked ? 'disabled="disabled"' : '');
 
-        echo '<option value="">-- Do Not Deploy --</option>';
+        echo '<option value="">-- Do Not Deploy / Auto-Detect --</option>';
         foreach ($deployment_types as $type) {
+            $is_selected = ($selected_config_id && $selected_config_id == $type->ID) || 
+                           (!$selected_config_id && $auto_detected_config == $type->ID);
             printf(
                 '<option value="%s" %s>%s</option>',
                 esc_attr($type->ID),
-                selected($selected_config_id, $type->ID, false),
+                selected($is_selected, true, false),
                 esc_html($type->post_title)
             );
         }
@@ -72,16 +99,76 @@ class Omeda_Hooks {
             // as disabled fields are not.
             printf('<input type="hidden" name="_omeda_config_id" value="%s" />', esc_attr($selected_config_id));
             echo '<p class="description"><em>Deployment type is locked because a deployment has already been created in Omeda.</em></p>';
+        } else {
+            echo '<p class="description"><em>Leave as "Auto-Detect" to use the deployment type configured for this post type/template, or manually override.</em></p>';
         }
 
         echo '<hr>';
 
         if ($track_id) {
             echo '<p><strong>Omeda TrackID:</strong> ' . esc_html($track_id) . '</p>';
+            
+            // Action Buttons Section
+            echo '<div id="omeda-actions" style="margin-top: 15px;">';
+            
+            if ($deployment_ready) {
+                // Send Test Button
+                echo '<button type="button" id="omeda-send-test-btn" class="button button-secondary" style="width: 100%; margin-bottom: 10px;">';
+                echo '<span class="dashicons dashicons-email" style="vertical-align: middle;"></span> Send Test Email';
+                echo '</button>';
+                
+                if ($test_sent) {
+                    echo '<p style="color: #46b450; font-size: 0.9em; margin: 5px 0;"><span class="dashicons dashicons-yes"></span> Last test sent: ' . esc_html($test_sent) . '</p>';
+                }
+
+                // Schedule/Unschedule Section
+                if (!$is_scheduled) {
+                    echo '<div id="omeda-schedule-section" style="margin-top: 15px; padding: 10px; background: #f9f9f9; border: 1px solid #ddd;">';
+                    echo '<p><strong>Schedule Deployment:</strong></p>';
+                    echo '<input type="datetime-local" id="omeda-schedule-date" style="width: 100%; margin-bottom: 10px;" />';
+                    echo '<label style="display: block; margin-bottom: 10px;">';
+                    echo '<input type="checkbox" id="omeda-schedule-confirm" /> I confirm the deployment is ready to schedule';
+                    echo '</label>';
+                    echo '<button type="button" id="omeda-schedule-btn" class="button button-primary" style="width: 100%;" disabled>';
+                    echo '<span class="dashicons dashicons-calendar-alt" style="vertical-align: middle;"></span> Schedule Deployment';
+                    echo '</button>';
+                    echo '</div>';
+                } else {
+                    echo '<div style="margin-top: 15px; padding: 10px; background: #e7f7e7; border: 1px solid #46b450;">';
+                    echo '<p style="color: #46b450; margin: 0;"><span class="dashicons dashicons-yes"></span> <strong>Deployment Scheduled</strong></p>';
+                    echo '<p style="margin: 5px 0;">Send date: ' . esc_html($schedule_date) . ' UTC</p>';
+                    echo '<button type="button" id="omeda-unschedule-btn" class="button button-secondary" style="width: 100%;">';
+                    echo '<span class="dashicons dashicons-no" style="vertical-align: middle;"></span> Unschedule';
+                    echo '</button>';
+                    echo '</div>';
+                }
+            } else {
+                echo '<p><em>Deployment is being created. Please wait...</em></p>';
+            }
+            
+            echo '</div>'; // end omeda-actions
+        }
+
+        // Show pending jobs if Action Scheduler is available
+        if (function_exists('as_get_scheduled_actions')) {
+            $async_jobs = omeda_wp_integration()->async_jobs;
+            if ($async_jobs) {
+                $pending_jobs = $async_jobs->get_pending_jobs($post->ID);
+                if (!empty($pending_jobs)) {
+                    echo '<hr><p><strong>Pending Jobs:</strong></p>';
+                    echo '<ul style="margin: 0; padding-left: 20px; font-size: 0.9em;">';
+                    foreach ($pending_jobs as $job) {
+                        $job_name = str_replace('omeda_async_', '', $job['hook']);
+                        $scheduled_time = isset($job['scheduled']->date) ? $job['scheduled']->date : $job['scheduled']->format('Y-m-d H:i:s');
+                        echo '<li>' . esc_html(ucwords(str_replace('_', ' ', $job_name))) . ' - ' . esc_html($scheduled_time) . '</li>';
+                    }
+                    echo '</ul>';
+                }
+            }
         }
 
         if ($workflow_logs) {
-            echo '<h4>Workflow Log:</h4>';
+            echo '<hr><h4>Workflow Log:</h4>';
             echo '<div style="max-height: 200px; overflow-y: scroll; background: #f9f9f9; padding: 5px; font-size: 0.9em; font-family: monospace; border: 1px solid #eee;">';
             foreach (array_reverse($workflow_logs) as $log_json) {
                 $log_data = json_decode($log_json, true);
@@ -93,9 +180,9 @@ class Omeda_Hooks {
                 if (strpos($log_data['message'], 'Complete') !== false) $color = '#46b450';
                 
                 printf(
-                    '<div style="color:%s; margin-bottom: 3px;" title="%s">[%s] %s</div>',
+                    '<div style="color:%s; margin-bottom: 3px;">[%s] [%s] %s</div>',
                     $color,
-                    esc_attr($log_data['timestamp']),
+                    esc_html($log_data['timestamp']),
                     esc_html($log_data['level']),
                     esc_html($log_data['message'])
                 );
@@ -115,32 +202,43 @@ class Omeda_Hooks {
         $config_id = isset($_POST['_omeda_config_id']) ? sanitize_text_field($_POST['_omeda_config_id']) : '';
         $track_id = get_post_meta($post_id, '_omeda_track_id', true);
 
+        // If no explicit config selected, try auto-detection
+        if (empty($config_id)) {
+            $config_id = Omeda_Deployment_Types::find_config_for_post($post_id);
+        }
+
         // Always update the config ID in post meta to keep the UI selection consistent.
         update_post_meta($post_id, '_omeda_config_id', $config_id);
 
         if (empty($config_id)) {
-            // User selected "-- Do Not Deploy --" or cleared the selection.
-            // Future enhancement: could add logic here to cancel an existing deployment.
+            // User selected "-- Do Not Deploy --" or no matching config found.
             return;
         }
 
+        // Get async jobs handler
+        $async_jobs = omeda_wp_integration()->async_jobs;
+        
+        // Check if Action Scheduler is available
+        $use_async = function_exists('as_schedule_single_action');
+
         if (empty($track_id)) {
-            // SCENARIO: CREATE DEPLOYMENT
-            // This is the first time a deployment type is being saved for this post.
-            // Create the deployment, assign the audience, and add the initial content.
-            $this->workflow_manager->create_and_assign_audience($post_id, $config_id);
+            // SCENARIO: CREATE DEPLOYMENT - Execute immediately
+            if ($use_async && $async_jobs) {
+                // Async: Schedule creation job to run ASAP (no delay)
+                $async_jobs->schedule_create_deployment($post_id, $config_id, 0);
+            } else {
+                // Fallback: Synchronous execution
+                $this->workflow_manager->create_and_assign_audience($post_id, $config_id);
+            }
 
         } else {
-            // SCENARIO: UPDATE CONTENT
-            // A deployment already exists, so just update the content.
-            $this->workflow_manager->update_content($post_id, $track_id, $config_id);
-
-            // Also, trigger a new test if the post is already published.
-            if (get_post_status($post_id) === 'publish') {
-                $config = $this->workflow_manager->prepare_configuration($post_id, $config_id);
-                if ($config) {
-                    $this->workflow_manager->send_test($post_id, $track_id, $config);
-                }
+            // SCENARIO: UPDATE CONTENT - Execute immediately
+            if ($use_async && $async_jobs) {
+                // Async: Schedule update job to run ASAP (no delay)
+                $async_jobs->schedule_update_content($post_id, $track_id, $config_id, 0);
+            } else {
+                // Fallback: Synchronous execution
+                $this->workflow_manager->update_content($post_id, $track_id, $config_id);
             }
         }
     }
@@ -166,7 +264,134 @@ class Omeda_Hooks {
         $is_scheduling = ($old_status !== 'future' && $new_status === 'future');
 
         if ($is_publishing || $is_scheduling) {
-            $this->workflow_manager->schedule_and_send_test($post->ID, $track_id, $config_id);
+            // Get async jobs handler
+            $async_jobs = omeda_wp_integration()->async_jobs;
+            
+            // Check if Action Scheduler is available
+            $use_async = function_exists('as_schedule_single_action');
+
+            if ($use_async && $async_jobs) {
+                // Async: Schedule finalization sequence
+                $async_jobs->schedule_finalize_deployment($post->ID, $track_id, $config_id);
+            } else {
+                // Fallback: Synchronous execution
+                $this->workflow_manager->schedule_and_send_test($post->ID, $track_id, $config_id);
+            }
+        }
+    }
+
+    /**
+     * Enqueue admin scripts and styles for the Omeda meta box.
+     */
+    public function enqueue_admin_scripts($hook) {
+        global $post;
+
+        // Only load on post edit screens
+        if (!in_array($hook, ['post.php', 'post-new.php']) || !$post || !in_array($post->post_type, $this->get_supported_post_types())) {
+            return;
+        }
+
+        wp_enqueue_script(
+            'omeda-admin',
+            plugins_url('assets/js/omeda-admin.js', dirname(__FILE__)),
+            array('jquery'),
+            '1.0.1',
+            true
+        );
+
+        wp_localize_script('omeda-admin', 'omedaAdmin', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'post_id' => $post->ID,
+            'nonce' => wp_create_nonce('omeda_ajax_nonce')
+        ));
+    }
+
+    /**
+     * AJAX Handler: Send Test Email
+     */
+    public function ajax_send_test() {
+        check_ajax_referer('omeda_ajax_nonce', 'nonce');
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        if (!$post_id || !current_user_can('edit_post', $post_id)) {
+            wp_send_json_error(['message' => 'Unauthorized']);
+        }
+
+        $track_id = get_post_meta($post_id, '_omeda_track_id', true);
+        $config_id = get_post_meta($post_id, '_omeda_config_id', true);
+
+        if (empty($track_id) || empty($config_id)) {
+            wp_send_json_error(['message' => 'Deployment not configured or created yet.']);
+        }
+
+        $async_jobs = omeda_wp_integration()->async_jobs;
+        $result = $async_jobs->send_test_email($post_id, $track_id, $config_id);
+
+        if ($result['success']) {
+            wp_send_json_success($result);
+        } else {
+            wp_send_json_error($result);
+        }
+    }
+
+    /**
+     * AJAX Handler: Schedule Deployment
+     */
+    public function ajax_schedule_deployment() {
+        check_ajax_referer('omeda_ajax_nonce', 'nonce');
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        $schedule_date = isset($_POST['schedule_date']) ? sanitize_text_field($_POST['schedule_date']) : '';
+
+        if (!$post_id || !current_user_can('edit_post', $post_id)) {
+            wp_send_json_error(['message' => 'Unauthorized']);
+        }
+
+        if (empty($schedule_date)) {
+            wp_send_json_error(['message' => 'Schedule date is required.']);
+        }
+
+        $track_id = get_post_meta($post_id, '_omeda_track_id', true);
+        $config_id = get_post_meta($post_id, '_omeda_config_id', true);
+
+        if (empty($track_id) || empty($config_id)) {
+            wp_send_json_error(['message' => 'Deployment not configured or created yet.']);
+        }
+
+        $async_jobs = omeda_wp_integration()->async_jobs;
+        $result = $async_jobs->schedule_deployment($post_id, $track_id, $config_id, $schedule_date);
+
+        if ($result['success']) {
+            wp_send_json_success($result);
+        } else {
+            wp_send_json_error($result);
+        }
+    }
+
+    /**
+     * AJAX Handler: Unschedule Deployment
+     */
+    public function ajax_unschedule_deployment() {
+        check_ajax_referer('omeda_ajax_nonce', 'nonce');
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        if (!$post_id || !current_user_can('edit_post', $post_id)) {
+            wp_send_json_error(['message' => 'Unauthorized']);
+        }
+
+        $track_id = get_post_meta($post_id, '_omeda_track_id', true);
+
+        if (empty($track_id)) {
+            wp_send_json_error(['message' => 'No deployment found.']);
+        }
+
+        $async_jobs = omeda_wp_integration()->async_jobs;
+        $result = $async_jobs->unschedule_deployment($post_id, $track_id);
+
+        if ($result['success']) {
+            wp_send_json_success($result);
+        } else {
+            wp_send_json_error($result);
         }
     }
 }

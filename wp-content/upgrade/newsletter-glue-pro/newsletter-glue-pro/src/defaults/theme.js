@@ -1,0 +1,293 @@
+const defaults = nglue_backend.theme_r;
+const mobile = nglue_backend.theme_m;
+
+export const theme = {
+  background: defaults.container_bg,
+  font: defaults.defaultFont,
+  color: defaults.p_colour,
+  lineheight: defaults.defaultLineHeight,
+  fontweight: defaults.defaultFontWeight,
+  innerpadding: { top: "0px", bottom: "0px", left: "0px", right: "0px" },
+  colors: {
+    primary: defaults.a_colour,
+    h3: defaults.h3_colour,
+    btn_colour: defaults.btn_colour,
+    btn_bg: defaults.btn_bg,
+  },
+  optin: {
+    padding: { top: "20px", left: "20px", right: "20px", bottom: "20px" },
+    margin: { top: "0px", left: "0px", right: "0px", bottom: "0px" },
+    fontsize_heading: "24px",
+    fontsize_desc: "16px",
+    fontsize_label: "14px",
+    fontsize_input: "14px",
+    fontsize_text: "16px",
+    fontsize_checkbox: "16px",
+    fontsize_button: "16px",
+    fontsize_success: "16px",
+  },
+  posts: {
+    padding: { top: "10px", left: "20px", right: "20px", bottom: "10px" },
+    margin: { top: "0px", left: "0px", right: "0px", bottom: "0px" },
+    fontsize_title: "24px",
+    fontsize_text: "16px",
+    fontsize_label: "13px",
+    fontsize_author: "14px",
+    fontsize_button: "14px",
+  },
+  separator: {
+    padding: { top: "20px", left: "20px", right: "20px", bottom: "20px" },
+    width: "560px",
+    height: "1px",
+  },
+  spacer: {
+    height: defaults.defaultSpacerHeight,
+  },
+  block: {
+    padding: defaults.defaultPadding,
+    fontsize: defaults.p_size,
+  },
+  share: {
+    padding: { top: "20px", bottom: "20px", left: "20px", right: "20px" },
+    fontsize: defaults.p_size,
+  },
+  meta: {
+    fontsize: "12px",
+    padding: { top: "20px", bottom: "20px", left: "20px", right: "20px" },
+  },
+  author: {
+    fontsize: "14px",
+    padding: { top: "20px", bottom: "20px", left: "20px", right: "20px" },
+  },
+  container: {
+    padding: { top: "20px", bottom: "20px", left: "0px", right: "0px" },
+    margin: { top: "0px", bottom: "0px", left: "0px", right: "0px" },
+    fontsize: defaults.p_size,
+    lineheight: defaults.defaultLineHeight,
+    fontweight: defaults.defaultFontWeight,
+  },
+  embed: {
+    padding: { top: "0px", bottom: "0px", left: "0px", right: "0px" },
+    margin: { top: "60px", bottom: "60px", left: "60px", right: "60px" },
+  },
+  table: {
+    fontsize: defaults.p_size,
+    lineheight: defaults.defaultLineHeight,
+    margin: { top: "20px", bottom: "20px", left: "20px", right: "20px" },
+    padding: { top: "10px", bottom: "10px", left: "10px", right: "10px" },
+  },
+  columns: {
+    padding: defaults.columnsPadding,
+  },
+  column: {
+    padding: defaults.columnPadding,
+  },
+  quote: {
+    fontsize: defaults.defaultQuoteSize,
+    border: defaults.a_colour,
+    padding: defaults.quotePadding,
+    lineheight: 1.6,
+  },
+  list: {
+    padding: defaults.defaultListPadding,
+    main_padding: defaults.defaultMainListPadding,
+    spacing: "0px",
+  },
+  image: {
+    padding: defaults.defaultImagePadding,
+    fontsize: "14px",
+    fontweight: defaults.defaultFontWeight,
+  },
+  headings: {
+    padding: defaults.defaultHeadingPadding,
+    fontweight: defaults.defaultFontWeightH,
+    h1: {
+      color: defaults.h1_colour,
+      font: defaults.defaultFonth1,
+      fontsize: defaults.h1_size,
+      padding: defaults.h1_padding,
+      lineheight: 1.2,
+    },
+    h2: {
+      color: defaults.h2_colour,
+      font: defaults.defaultFonth2,
+      fontsize: defaults.h2_size,
+      padding: defaults.h2_padding,
+      lineheight: 1.2,
+    },
+    h3: {
+      color: defaults.h3_colour,
+      font: defaults.defaultFonth3,
+      fontsize: defaults.h3_size,
+      padding: defaults.h3_padding,
+      lineheight: 1.2,
+    },
+    h4: {
+      color: defaults.h4_colour,
+      font: defaults.defaultFonth4,
+      fontsize: defaults.h4_size,
+      padding: defaults.h4_padding,
+      lineheight: 1.4,
+    },
+    h5: {
+      color: defaults.h5_colour,
+      font: defaults.defaultFonth4,
+      fontsize: defaults.h5_size,
+      padding: defaults.h5_padding,
+      lineheight: 1.4,
+    },
+    h6: {
+      color: defaults.h6_colour,
+      font: defaults.defaultFonth6,
+      fontsize: defaults.h6_size,
+      padding: defaults.h6_padding,
+      lineheight: 1.4,
+    },
+  },
+  buttons: {
+    spacing: "20px",
+    padding: defaults.buttonPadding,
+  },
+  button: {
+    padding: defaults.singleButtonPadding,
+    width: defaults.btn_width,
+    color: defaults.btn_colour,
+    radius: defaults.btn_radius,
+    bg: defaults.btn_bg,
+    lineheight: 1.5,
+  },
+  mobile: {
+    posts: {
+      padding: { top: "10px", left: "10px", right: "10px", bottom: "10px" },
+      margin: { top: "0px", left: "0px", right: "0px", bottom: "0px" },
+      fontsize_title: "18px",
+      fontsize_text: "15px",
+      fontsize_label: "11px",
+      fontsize_author: "13px",
+      fontsize_button: "13px",
+    },
+    meta: {
+      fontsize: "12px",
+      padding: { top: "10px", bottom: "10px", left: "10px", right: "10px" },
+      lineheight: 1.5,
+    },
+    optin: {
+      padding: { top: "20px", left: "20px", right: "20px", bottom: "20px" },
+      margin: { top: "0px", left: "0px", right: "0px", bottom: "0px" },
+      fontsize_heading: "18px",
+      fontsize_desc: "14px",
+      fontsize_label: "13px",
+      fontsize_input: "13px",
+      fontsize_text: "13px",
+      fontsize_checkbox: "13px",
+      fontsize_button: "13px",
+      fontsize_success: "14px",
+    },
+    author: {
+      fontsize: "13px",
+      padding: { top: "10px", bottom: "10px", left: "10px", right: "10px" },
+      lineheight: 1.5,
+    },
+    table: {
+      fontsize: mobile.p_size,
+      lineheight: 1.5,
+      margin: { top: "10px", bottom: "10px", left: "10px", right: "10px" },
+      padding: { top: "5px", bottom: "5px", left: "5px", right: "5px" },
+    },
+    separator: {
+      padding: { top: "15px", left: "15px", right: "15px", bottom: "15px" },
+      width: "300px",
+      height: "1px",
+    },
+    spacer: {
+      height: defaults.defaultSpacerHeight,
+    },
+    columns: {
+      padding: defaults.mobilecolumnsPadding,
+    },
+    column: {
+      padding: defaults.mobilecolumnPadding,
+    },
+    paragraph: {
+      fontsize: mobile.p_size,
+      lineheight: 1.5,
+      padding: defaults.mobile_p_padding,
+    },
+    container: {
+      padding: { top: "20px", bottom: "20px", left: "0px", right: "0px" },
+      margin: { top: "0px", bottom: "0px", left: "0px", right: "0px" },
+      fontsize: mobile.p_size,
+      lineheight: 1.5,
+    },
+    embed: {
+      fontsize: mobile.p_size,
+      lineheight: 1.5,
+      padding: { top: "0px", bottom: "0px", left: "0px", right: "0px" },
+      margin: { top: "10px", bottom: "10px", left: "10px", right: "10px" },
+    },
+    share: {
+      padding: { top: "10px", bottom: "10px", left: "10px", right: "10px" },
+      fontsize: 14,
+      lineheight: 1.5,
+    },
+    buttons: {
+      spacing: "20px",
+      padding: defaults.buttonPadding,
+    },
+    button: {
+      fontsize: mobile.p_size,
+      lineheight: 1.5,
+      padding: defaults.singleButtonPadding,
+    },
+    quote: {
+      fontsize: defaults.MobileQuoteSize,
+      citesize: mobile.MobileQuoteCiteSize,
+      lineheight: 1.6,
+      padding: defaults.MobileQuotePadding,
+    },
+    list: {
+      fontsize: mobile.p_size,
+      lineheight: 1.5,
+      padding: defaults.mobile_list_padding,
+      main_padding: defaults.mobile_main_list_padding,
+      spacing: "0px",
+    },
+    image: {
+      padding: defaults.defaultImagePadding,
+      fontsize: "12px",
+      fontweight: defaults.defaultFontWeight,
+    },
+    headings: {
+      h1: {
+        fontsize: mobile.h1_size,
+        lineheight: 1.1,
+        padding: defaults.mobile_h1_padding,
+      },
+      h2: {
+        fontsize: mobile.h2_size,
+        lineheight: 1.1,
+        padding: defaults.mobile_h2_padding,
+      },
+      h3: {
+        fontsize: mobile.h3_size,
+        lineheight: 1.2,
+        padding: defaults.mobile_h3_padding,
+      },
+      h4: {
+        fontsize: mobile.h4_size,
+        lineheight: 1.2,
+        padding: defaults.mobile_h4_padding,
+      },
+      h5: {
+        fontsize: mobile.h5_size,
+        lineheight: 1.2,
+        padding: defaults.mobile_h5_padding,
+      },
+      h6: {
+        fontsize: mobile.h6_size,
+        lineheight: 1.2,
+        padding: defaults.mobile_h6_padding,
+      },
+    },
+  },
+};

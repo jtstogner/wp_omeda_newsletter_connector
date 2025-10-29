@@ -2,24 +2,32 @@
 /**
  * Plugin Name: Omeda WordPress Integration
  * Description: Integrates WordPress content lifecycle with Omeda for email deployments.
- * Version: 1.0.0
- * Author: Your Name
+ * Version: 1.7.1
+ * Author: Josh Stogner
  */
 
 // Exit if accessed directly.
 if (!defined('ABSPATH')) {
     exit;
 }
-
 // Define constants.
-define('OMEDA_WP_VERSION', '1.0.0');
+define('OMEDA_WP_VERSION', '1.7.1');
+define("OMEDA_WP_PLUGIN_AUTHOR", "Josh Stogner");
 define('OMEDA_WP_PLUGIN_DIR', plugin_dir_path(__FILE__));
+
+// Load Action Scheduler if not already loaded by another plugin
+if (!function_exists('as_schedule_single_action')) {
+    require_once OMEDA_WP_PLUGIN_DIR . 'lib/action-scheduler/action-scheduler.php';
+}
 
 // Include necessary files.
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-settings.php';
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-api-client.php';
+require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-data-manager.php';
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-deployment-types.php';
+require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-variable-parser.php';
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-workflow-manager.php';
+require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-async-jobs.php';
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-hooks.php';
 
 /**
@@ -31,6 +39,7 @@ class Omeda_WP_Integration
     public $settings;
     public $deployment_types;
     public $workflow_manager;
+    public $async_jobs;
     public $hooks;
     private $api_client = null;
 
@@ -59,6 +68,10 @@ class Omeda_WP_Integration
         if ($this->api_client) {
             $this->workflow_manager = new Omeda_Workflow_Manager($this->api_client);
             $this->workflow_manager->init();
+
+            // Initialize Async Jobs (Action Scheduler handlers)
+            $this->async_jobs = new Omeda_Async_Jobs($this->workflow_manager);
+            $this->async_jobs->init();
 
             $this->hooks = new Omeda_Hooks($this->workflow_manager);
             $this->hooks->init();

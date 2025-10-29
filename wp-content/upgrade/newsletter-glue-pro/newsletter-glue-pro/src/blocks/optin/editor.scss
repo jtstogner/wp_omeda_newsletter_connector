@@ -1,0 +1,21 @@
+.wp-block-newsletterglue-optin {
+
+	&.is-landscape {
+		.ngl-form-wrap {
+			.ngl-form-field {
+				flex-grow: 1;
+			}
+		}
+	}
+
+	.ngl-form-label-req::after {
+		content: '*';
+		margin: 0 2px;
+    	color: #df2020;
+	}
+
+	.ngl-form {
+		margin-bottom: 0 !important;
+	}
+
+}

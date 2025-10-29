@@ -1,0 +1,24 @@
+.wp-block-newsletterglue-callout {
+
+}
+
+.wp-block-newsletterglue-callout h1,
+.wp-block-newsletterglue-callout h2,
+.wp-block-newsletterglue-callout h3,
+.wp-block-newsletterglue-callout h4,
+.wp-block-newsletterglue-callout h5,
+.wp-block-newsletterglue-callout h6 {
+	margin: 0 0 14px !important;
+	padding: 0 !important;
+}
+
+.wp-block-newsletterglue-callout figure,
+.wp-block-newsletterglue-callout p {
+	margin: 0 0 25px !important;
+	padding: 0 !important;
+}
+
+.wp-block-newsletterglue-callout div.wp-block[data-align="right"] figure.wp-block-image {
+	max-width: 100% !important;
+	width: 100% !important;
+}

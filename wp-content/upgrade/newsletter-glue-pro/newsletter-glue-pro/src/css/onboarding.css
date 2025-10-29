@@ -1,0 +1,26 @@
+body.admin_page_ngl-welcome-wizard #wpadminbar,
+body.admin_page_ngl-welcome-wizard #adminmenuback,
+body.admin_page_ngl-welcome-wizard #adminmenuwrap,
+body.admin_page_ngl-welcome-wizard #wpfooter,
+body.admin_page_ngl-welcome-wizard .notice {
+	display: none !important;
+}
+
+body.admin_page_ngl-welcome-wizard #wpcontent,
+body.admin_page_ngl-welcome-wizard #wpfooter {
+	margin: 0;
+}
+
+body.admin_page_ngl-welcome-wizard #wpcontent,
+body.admin_page_ngl-welcome-wizard #wpbody-content {
+	padding: 0;
+	float: none;
+}
+
+html.wp-toolbar body.admin_page_ngl-welcome-wizard {
+	margin-top: -32px;
+}
+
+#nglue-welcome-wizard {
+	padding: 0 0 1px;
+}

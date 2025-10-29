@@ -1,0 +1,20 @@
+.wp-block-newsletterglue-embed {
+
+	.wp-block-embed {
+		&.is-loading {
+			min-height: 200px;
+    		display: flex;
+    		align-items: center;
+    		justify-content: center;
+		}
+		&.components-placeholder {
+			a {
+				color: #0088A0 !important;
+			}
+		}
+	}
+
+	img {
+		max-width: 100%;
+	}
+}

@@ -1,0 +1,206 @@
+/* Modal styles with unique namespace */
+.nglsc-subscriber-modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 999999; /* Extremely high z-index to ensure it's above everything */
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.nglsc-subscriber-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fefefe;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 70%;
+    max-width: 800px;
+    min-width: 300px; /* Ensure minimum width for small screens */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.nglsc-subscriber-modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.nglsc-subscriber-modal-close:hover,
+.nglsc-subscriber-modal-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nglsc-results-container {
+    width: 100%;
+}
+
+.nglsc-subscriber-result {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-left: 4px solid #46b450;
+}
+
+.nglsc-subscriber-error {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-left: 4px solid #dc3232;
+}
+
+/* Button styles */
+.nglsc-check-subscriber-button {
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.nglsc-check-subscriber-button:hover {
+    background-color: #005177;
+}
+
+/* Table styles for subscriber data */
+.nglsc-subscriber-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.nglsc-subscriber-table th,
+.nglsc-subscriber-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.nglsc-subscriber-table th {
+    background-color: #f1f1f1;
+    font-weight: 600;
+}
+
+.nglsc-subscriber-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Status indicators */
+.nglsc-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.nglsc-status-subscribed {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+.nglsc-status-unsubscribed {
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+}
+
+.nglsc-status-not-subscribed {
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+.nglsc-status-bounced,
+.nglsc-status-soft-bounced,
+.nglsc-status-marked-as-spam {
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+.nglsc-status-unconfirmed {
+    background-color: #d9edf7;
+    color: #31708f;
+}
+
+.nglsc-status-unknown {
+    background-color: #e5e5e5;
+    color: #333;
+}
+
+/* Segment checkbox styling */
+.nglsc-segment-checkboxes {
+    margin: 0;
+    padding: 5px 0;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.nglsc-segment-checkbox-item {
+    margin: 0;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+}
+
+.nglsc-segment-checkbox-item:hover {
+    background-color: #f1f1f1;
+}
+
+.nglsc-segment-checkbox-item input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.nglsc-segment-checkbox-item input[type="checkbox"]:disabled + label {
+    color: #666;
+    cursor: default;
+}
+
+.nglsc-segment-checkbox-item input[type="checkbox"]:checked + label {
+    font-weight: 500;
+    color: #0073aa;
+}
+
+/* Keep the old segment list styling for backward compatibility */
+.nglsc-segment-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.nglsc-segment-list li {
+    margin-bottom: 4px;
+    padding: 2px 5px;
+    background-color: #f1f1f1;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+/* Action button styling */
+.nglsc-action-button {
+    display: inline-block;
+    padding: 4px 8px;
+    text-decoration: none;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: center;
+}

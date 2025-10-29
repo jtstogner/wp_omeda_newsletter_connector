@@ -1,0 +1,48 @@
+.nglue-main {
+
+	label {
+		text-transform: none;
+	}
+
+	a.ngl-edit-link {
+		display: flex;
+		align-items: center;
+		text-decoration: none;
+	    min-height: 26px;
+		line-height: 24px;
+		svg {
+			margin: 0 0 0 8px;
+		}
+	}
+
+	.nglue-input-help {
+		a {
+			display: inline-flex;
+			align-items: center;
+			column-gap: 4px;
+			svg {
+				fill: currentColor;
+				width: 16px;
+				height: 16px;
+			}
+		}
+		a.nglue-input-var {
+			color: #707070;
+			text-decoration: none !important;
+			box-shadow: none !important;
+		}
+	}
+
+	.nglue-simple-row {
+		.nglue-head-part {
+			padding: 0;
+		}
+		.nglue-head {
+			font-size: 18px;
+		}
+		p {
+			margin: 0;
+		}
+	}
+
+}

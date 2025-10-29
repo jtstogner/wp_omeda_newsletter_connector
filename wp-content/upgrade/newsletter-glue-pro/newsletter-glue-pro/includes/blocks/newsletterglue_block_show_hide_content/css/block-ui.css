@@ -1,0 +1,94 @@
+.wp-block-newsletterglue-group {
+	padding: 20px;
+	border: 1px solid #1e1e1e;
+}
+
+.wp-block-newsletterglue-group .components-resizable-box__container {
+	min-width: auto !important;
+	max-width: 100% !important;
+}
+
+[data-warning] {
+	position: relative;
+}
+
+[data-warning='true']::after {
+	content: "";
+    width: 25px;
+    height: 25px;
+    display: flex;
+    background-image: url(../icon/icon-eye.svg);
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: absolute;
+    top: 0;
+    right: -35px;
+    z-index: 100;
+    cursor: pointer;
+}
+
+.ngl-conditional-content .components-card:first-of-type .components-card-body > .components-base-control:last-of-type {
+	display: none;
+}
+
+.ngl-conditional-content > .components-base-control__field > .components-base-control {
+	margin-bottom: 8px;
+}
+
+.ngl-conditional-content > .components-base-control__field > .components-base-control__label {
+	font-weight: bold;
+}
+
+.ngl-conditional-content .components-card-header {
+	padding: 8px 0px 8px 12px;
+    font-weight: bold;
+	background-color: #f0f0f1;
+	cursor: pointer;
+}
+
+.ngl-conditional-content .components-card:not(.is-active) .components-card-body {
+	display: none;
+}
+
+.ngl-conditional-content .components-card-header > span {
+	text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.ngl-conditional-content .components-card-body {
+	padding: 12px 12px 4px 12px;
+}
+
+.ngl-conditional-content .components-card-body > .components-base-control {
+	margin-bottom: 0;
+}
+
+.ngl-conditional-content .btn-refresh {
+	justify-content: flex-end;
+}
+
+
+.ngl-conditional-content .btn-refresh,
+.ngl-conditional-content .btn-refresh:hover,
+.ngl-conditional-content .btn-refresh:focus,
+.ngl-conditional-content .btn-refresh:active,
+.ngl-conditional-content .btn-remove,
+.ngl-conditional-content .btn-remove:hover,
+.ngl-conditional-content .btn-remove:focus,
+.ngl-conditional-content .btn-remove:active {
+	box-shadow: none !important;
+	outline: none !important;
+}
+
+.ngl-conditional-content .btn-remove {
+	color: #cc1818;
+}
+
+.ngl-conditional-content.is-loading .components-card,
+.ngl-conditional-content.is-loading .btn-add-condition,
+.ngl-conditional-content.is-loading .btn-refresh {
+	opacity: .45;
+	pointer-events: none;
+	cursor: progress;
+}

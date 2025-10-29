@@ -1,0 +1,5 @@
+{
+    "require": {
+        "sailthru/sailthru-php5-client": "^1.2"
+    }
+}

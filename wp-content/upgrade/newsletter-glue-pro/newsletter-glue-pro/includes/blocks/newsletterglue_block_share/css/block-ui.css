@@ -1,0 +1,98 @@
+.wp-block-newsletterglue-share {
+	min-height: 54px;
+}
+
+.wp-block-newsletter-share-left .block-editor-inner-blocks,
+.wp-block-newsletter-share-left .block-editor-block-list__layout,
+.wp-block-newsletter-share-left .ngl-share-description {
+	display: flex;
+	justify-content: flex-start;
+	width: 100%;
+}
+
+.wp-block-newsletter-share-center .block-editor-inner-blocks,
+.wp-block-newsletter-share-center .block-editor-block-list__layout,
+.wp-block-newsletter-share-center .ngl-share-description {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+
+.wp-block-newsletter-share-right .block-editor-inner-blocks,
+.wp-block-newsletter-share-right .block-editor-block-list__layout,
+.wp-block-newsletter-share-right .ngl-share-description {
+	display: flex;
+	justify-content: flex-end;
+	width: 100%;
+}
+
+.wp-block-newsletterglue-share .block-list-appender > .block-editor-inserter {
+	margin: 4px 0;
+}
+
+.wp-block-newsletterglue-share .block-list-appender.wp-block {
+	top: -15px !important;
+}
+
+.wp-block-newsletterglue-share .block-editor-button-block-appender.block-list-appender__toggle {
+	margin: 0;
+}
+
+div[data-type="newsletterglue/share"].is-selected .ngl-block-social-links__social-placeholder .ngl-social-link {
+	opacity: 0.2;
+	width: 24px;
+}
+
+.wp-block-newsletterglue-share div.block-list-appender {
+	display: inline-flex;
+}
+
+.wp-block-newsletterglue-share div.block-list-appender button {
+	margin: 0 0 0 4px;
+}
+
+.ngl-block-social-links__social-placeholder {
+	height: 24px;
+	display: inline-flex;
+	font-size: 0.9em;
+	margin: 4px 0;
+	position: absolute;
+}
+
+.ngl-block-social-links__social-placeholder-icons {
+	display: flex;
+	height: 24px;
+}
+
+.wp-block-newsletterglue-share .ngl-social-link {
+	border-radius: 999px;
+	display: inline-flex;
+	margin: 0 8px 0 0;
+}
+
+.ngl-block-social-links__social-placeholder .ngl-social-link {
+	opacity: 0.5;
+	width: 24px;
+}
+
+.wp-block-newsletterglue-share .block-editor-block-list__layout {
+
+}
+
+div.editor-styles-wrapper .wp-block-newsletterglue-share .block-editor-block-list__layout div[data-block] {
+	display: inline-block;
+	margin: 4px 12px 4px 0 !important;
+}
+
+div.editor-styles-wrapper .wp-block-newsletterglue-share .block-editor-block-list__layout .wp-block .ngl-social-link {
+	display: block;
+	margin: 0;
+}
+
+div.editor-styles-wrapper .wp-block-newsletterglue-share .block-editor-block-list__layout .wp-block img {
+	vertical-align: baseline !important;
+}
+
+.ngl-block-social-links__social-placeholder  .ngl-social-link-twitter { background: #1da1f2; }
+.ngl-block-social-links__social-placeholder  .ngl-social-link-facebook { background: #1778f2; }
+.ngl-block-social-links__social-placeholder  .ngl-social-link-instagram { background: #f00075; }
