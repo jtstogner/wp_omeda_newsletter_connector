@@ -8,9 +8,27 @@ class Omeda_API_Client {
     private $brand_abbreviation;
     private $base_url;
     private $default_user_id;
+    private $current_post_id = null; // Track the current post ID for logging context
+    private $current_step = null; // Track the current step for logging context
 
     public function __construct() {
         $this->load_configuration();
+    }
+
+    /**
+     * Set the current post ID context for logging
+     */
+    public function set_post_context($post_id, $step = null) {
+        $this->current_post_id = $post_id;
+        $this->current_step = $step;
+    }
+
+    /**
+     * Clear the post context
+     */
+    public function clear_post_context() {
+        $this->current_post_id = null;
+        $this->current_step = null;
     }
 
     private function load_configuration() {
@@ -28,7 +46,7 @@ class Omeda_API_Client {
     }
 
     /**
-     * Sends a request to the Omeda API. (Handles GET correctly)
+     * Sends a request to the Omeda API with comprehensive logging.
      */
     private function send_request($endpoint, $method = 'POST', $payload = null) {
         $url = $this->base_url . ltrim($endpoint, '/');
@@ -63,14 +81,44 @@ class Omeda_API_Client {
             $args['headers']['Content-Type'] = $content_type;
         }
 
+        // Log the API request using the new logger
+        Omeda_Logger::log_api_request(
+            $this->current_post_id,
+            $method,
+            $url,
+            $args['headers'],
+            $body,
+            $this->current_step
+        );
+
         $response = wp_remote_request($url, $args);
 
         if (is_wp_error($response)) {
-            throw new Exception('WordPress HTTP Error: ' . $response->get_error_message());
+            $error_msg = 'WordPress HTTP Error: ' . $response->get_error_message();
+            
+            // Log the error
+            Omeda_Logger::log_api_error(
+                $this->current_post_id,
+                $error_msg,
+                $this->current_step,
+                ['endpoint' => $endpoint, 'url' => $url]
+            );
+            
+            throw new Exception($error_msg);
         }
 
         $response_code = wp_remote_retrieve_response_code($response);
         $response_body = wp_remote_retrieve_body($response);
+        $response_headers = wp_remote_retrieve_headers($response);
+
+        // Log the API response using the new logger
+        Omeda_Logger::log_api_response(
+            $this->current_post_id,
+            $response_code,
+            $response_body,
+            $this->current_step,
+            $response_headers->getAll()
+        );
 
         // Handle successful responses
         if ($response_code >= 200 && $response_code < 300) {
@@ -85,6 +133,9 @@ class Omeda_API_Client {
             $error_details = [
                 'summary' => $error_message,
                 'endpoint' => $endpoint,
+                'url' => $url,
+                'method' => $method,
+                'http_code' => $response_code,
                 'payload' => $payload, // The original payload sent
                 'response_body' => $decoded_error ?? $response_body // The full decoded or raw response
             ];
@@ -94,7 +145,14 @@ class Omeda_API_Client {
                 $error_details['summary'] .= ': ' . $decoded_error['Errors'][0]['Error'];
             }
 
-            error_log('Omeda API Request Failed: ' . $error_details['summary'] . ' | Endpoint: ' . $endpoint);
+            // Log the detailed error
+            Omeda_Logger::log_api_error(
+                $this->current_post_id,
+                $error_details['summary'],
+                $this->current_step,
+                $error_details
+            );
+
             // Throw the structured error as a JSON string
             throw new Exception(json_encode($error_details));
         }
@@ -213,36 +271,53 @@ class Omeda_API_Client {
 
     // Step 3: Add Content
     public function step3_add_content($track_id, $config) {
-        $user_id = $config['UserId'] ?? $this->default_user_id;
-        $mailbox = $config['MailboxName'] ?? get_option('omeda_default_mailbox', 'newsletters');
+        try {
+            $this->workflow_manager->log_advanced(null, 'Preparing XML payload for content addition...', 'add_content');
 
-        $from_name = $config['FromName'];
-        $from_email = $config['FromEmail'];
-        $subject = $config['Subject'];
-        $reply_to = $config['ReplyTo'];
-        $html_content = $config['HtmlContent'];
 
-        $xml_payload = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<Deployment>
-    <TrackId>{$track_id}</TrackId>
-    <UserId>{$user_id}</UserId>
-    <Splits>
-        <Split>
-            <SplitNumber>1</SplitNumber>
-            <FromName><![CDATA[{$from_name}]]></FromName>
-            <FromEmail>{$from_email}</FromEmail>
-            <Mailbox>{$mailbox}</Mailbox>
-            <Subject><![CDATA[{$subject}]]></Subject>
-            <ReplyTo>{$reply_to}</ReplyTo>
-            <HtmlContent><![CDATA[{$html_content}]]></HtmlContent>
-        </Split>
-    </Splits>
-</Deployment>
-XML;
+            $user_id = $config['UserId'] ?? $this->default_user_id;
 
-        $xml_payload = trim(preg_replace('/>\s+</', '><', $xml_payload));
-        $this->send_request('omail/deployment/content/*', 'POST', $xml_payload);
+            // Extract just the mailbox part from the email (before @)
+            $from_email = $config['FromEmail'];
+            $mailbox = $config['MailboxName'] ?? explode('@', $from_email)[0];
+
+            $from_name = $config['FromName'];
+            $subject = $config['Subject'];
+            $reply_to = $config['ReplyTo'];
+            $html_content = $config['HtmlContent'];
+
+            $this->workflow_manager->log_advanced(null, 'Constructing XML payload...', 'add_content');
+
+            $xml_payload = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Deployment>
+                <TrackId>{$track_id}</TrackId>
+                <UserId>{$user_id}</UserId>
+                <Splits>
+                    <Split>
+                        <SplitNumber>1</SplitNumber>
+                        <FromName><![CDATA[{$from_name}]]></FromName>
+                        <Mailbox>{$mailbox}</Mailbox>
+                        <Subject><![CDATA[{$subject}]]></Subject>
+                        <ReplyTo>{$reply_to}</ReplyTo>
+                        <HtmlContent><![CDATA[{$html_content}]]></HtmlContent>
+                    </Split>
+                </Splits>
+            </Deployment>
+            XML;
+
+            $this->workflow_manager->log_advanced(null, 'Sending content addition request to Omeda...', 'add_content');
+            $this->workflow_manager->log_raw('Content Addition XML Payload: ' . $xml_payload, 'add_content');
+            $xml_payload = trim(preg_replace('/>\s+</', '><', $xml_payload));
+            $result = $this->send_request('omail/deployment/content/*', 'POST', $xml_payload);
+            $this->workflow_manager->log_advanced(null, 'Content addition request completed.', 'add_content');
+            $this->workflow_manager->log_raw('Content Addition Response: ' . print_r($result, true), 'add_content');
+            return $result;
+        }
+        catch (Exception $e){
+            throw new Exception('Error in step3_add_content: ' . $e->getMessage());
+        }
+        return $result;
     }
 
     // Step 4: Send Test

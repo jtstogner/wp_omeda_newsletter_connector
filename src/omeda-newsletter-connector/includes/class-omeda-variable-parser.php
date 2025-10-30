@@ -45,12 +45,15 @@ class Omeda_Variable_Parser
         
         // Build replacement map
         $replacements = array(
+            '{post_id}'           => $post_id,
+            '{post_slug}'         => $post->post_name,
             '{post_title}'        => get_the_title($post_id),
             '{post_date}'         => get_the_date('', $post_id),
             '{post_date_Y}'       => get_the_date('Y', $post_id),
             '{post_date_y}'       => get_the_date('y', $post_id),
             '{post_date_m}'       => get_the_date('m', $post_id),
             '{post_date_d}'       => get_the_date('d', $post_id),
+            '{post_date_ymd}'     => get_the_date('Ymd', $post_id),
             '{post_date_F}'       => get_the_date('F', $post_id),
             '{post_date_M}'       => get_the_date('M', $post_id),
             '{post_date_j}'       => get_the_date('j', $post_id),
@@ -126,12 +129,15 @@ class Omeda_Variable_Parser
      */
     public static function get_available_variables() {
         return array(
+            '{post_id}'           => 'Post ID',
+            '{post_slug}'         => 'Post slug/permalink',
             '{post_title}'        => 'Post title',
             '{post_date}'         => 'Post date (formatted)',
             '{post_date_Y}'       => 'Year (4 digits)',
             '{post_date_y}'       => 'Year (2 digits)',
             '{post_date_m}'       => 'Month (2 digits)',
             '{post_date_d}'       => 'Day (2 digits)',
+            '{post_date_ymd}'     => 'Date as YYYYMMDD',
             '{post_date_F}'       => 'Month name (e.g., January)',
             '{post_date_M}'       => 'Short month (e.g., Jan)',
             '{post_date_j}'       => 'Day without leading zero',

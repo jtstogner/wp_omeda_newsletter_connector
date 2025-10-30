@@ -86,7 +86,8 @@ class Omeda_Settings
 
          // Workflow Configuration Section (Informational, as we now use polling)
         add_settings_section('omeda_workflow_section', 'Workflow Configuration', array($this, 'workflow_section_callback'), $this->option_group);
-       
+        
+        $this->register_setting_field('omeda_logging_level', 'Logging Level', 'render_logging_level_field', 'omeda_workflow_section', 'basic');
     }
 
     public function defaults_section_callback() {
@@ -141,6 +142,24 @@ class Omeda_Settings
             <option value="production" <?php selected($value, 'production'); ?>>Production (ows.omeda.com)</option>
             <option value="staging" <?php selected($value, 'staging'); ?>>Staging (ows.omedastaging.com)</option>
         </select>
+        <?php
+    }
+    
+    public function render_logging_level_field($args)
+    {
+        $name = $args['field_name'];
+        $value = get_option($name, $args['default']);
+        ?>
+        <select name="<?php echo esc_attr($name); ?>">
+            <option value="basic" <?php selected($value, 'basic'); ?>>Basic - Main steps and errors only</option>
+            <option value="advanced" <?php selected($value, 'advanced'); ?>>Advanced - Full trace with detailed errors</option>
+            <option value="raw" <?php selected($value, 'raw'); ?>>Raw - Complete data dumps (request/response)</option>
+        </select>
+        <p class="description">
+            <strong>Basic:</strong> Shows main workflow steps, retries, and errors.<br>
+            <strong>Advanced:</strong> Adds transaction start/stop, step restarts, and detailed error messages.<br>
+            <strong>Raw:</strong> Includes complete request payloads and response data from Omeda API.
+        </p>
         <?php
     }
 
@@ -264,25 +283,118 @@ class Omeda_Settings
                     $logs = get_post_meta($post_id, '_omeda_workflow_log');
                     $workflow_state = get_post_meta($post_id, '_omeda_workflow_state', true);
                     $deployment_id = get_post_meta($post_id, '_omeda_deployment_id', true);
+                    $track_id = get_post_meta($post_id, '_omeda_track_id', true);
+                    
+                    // Calculate workflow summary directly from logs
+                    $summary = [
+                        'status' => 'none',
+                        'last_step' => null,
+                        'error_count' => 0,
+                        'last_error' => null,
+                        'last_timestamp' => null
+                    ];
+                    
+                    if (!empty($logs)) {
+                        $error_count = 0;
+                        $last_error = null;
+                        $last_step = null;
+                        $last_timestamp = null;
+                        
+                        foreach ($logs as $log_json) {
+                            $log = json_decode($log_json, true);
+                            if (!$log) continue;
+                            
+                            if ($log['level'] === 'ERROR') {
+                                $error_count++;
+                                if (!$last_error) {
+                                    $last_error = $log['message'];
+                                }
+                            }
+                            
+                            if (!empty($log['step'])) {
+                                $last_step = $log['step'];
+                            }
+                            
+                            if (!empty($log['timestamp'])) {
+                                $last_timestamp = $log['timestamp'];
+                            }
+                        }
+                        
+                        $summary['error_count'] = $error_count;
+                        $summary['last_error'] = $last_error;
+                        $summary['last_step'] = $last_step;
+                        $summary['last_timestamp'] = $last_timestamp;
+                        
+                        if ($error_count > 0) {
+                            $summary['status'] = 'error';
+                        } elseif ($workflow_state === 'completed') {
+                            $summary['status'] = 'complete';
+                        } elseif ($workflow_state) {
+                            $summary['status'] = 'in_progress';
+                        }
+                    }
                     
                     ?>
                     <hr>
                     <h2>Workflow Details for: <?php echo esc_html($post->post_title); ?></h2>
-                    <p><strong>Post ID:</strong> <?php echo esc_html($post_id); ?></p>
-                    <p><strong>Current Workflow State:</strong> <?php echo esc_html($workflow_state ?: 'None'); ?></p>
-                    <p><strong>Omeda Deployment ID:</strong> <?php echo esc_html($deployment_id ?: 'Not created yet'); ?></p>
                     
-                    <h3>Log Entries</h3>
+                    <div style="background: #f9f9f9; padding: 15px; margin: 15px 0; border-left: 4px solid #0073aa;">
+                        <h3 style="margin-top: 0;">Summary</h3>
+                        <p><strong>Post ID:</strong> <?php echo esc_html($post_id); ?></p>
+                        <p><strong>Current Workflow State:</strong> <?php echo esc_html($workflow_state ?: 'None'); ?></p>
+                        <p><strong>Omeda Deployment ID (Track ID):</strong> <?php echo esc_html($track_id ?: 'Not created yet'); ?></p>
+                        <p><strong>Status:</strong> 
+                            <?php 
+                            $status_color = '#999';
+                            if ($summary['status'] === 'complete') $status_color = '#46b450';
+                            elseif ($summary['status'] === 'in_progress') $status_color = '#00a0d2';
+                            elseif ($summary['status'] === 'error') $status_color = '#dc3232';
+                            ?>
+                            <span style="color: <?php echo $status_color; ?>; font-weight: bold;"><?php echo esc_html(ucfirst($summary['status'])); ?></span>
+                        </p>
+                        <?php if ($summary['last_step']) : ?>
+                            <p><strong>Last Step:</strong> <?php echo esc_html($summary['last_step']); ?></p>
+                        <?php endif; ?>
+                        <?php if ($summary['error_count'] > 0) : ?>
+                            <p><strong>Error Count:</strong> <span style="color: #dc3232;"><?php echo esc_html($summary['error_count']); ?></span></p>
+                            <?php if ($summary['last_error']) : ?>
+                                <p><strong>Last Error:</strong> <span style="color: #dc3232;"><?php echo esc_html($summary['last_error']); ?></span></p>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        <?php if ($summary['last_timestamp']) : ?>
+                            <p><strong>Last Update:</strong> <?php echo esc_html($summary['last_timestamp']); ?></p>
+                        <?php endif; ?>
+                    </div>
+                    
                     <?php if (empty($logs)) : ?>
                         <p>No log entries found for this post.</p>
-                    <?php else : ?>
+                    <?php else : 
+                        // Determine which tab to show
+                        $active_tab = isset($_GET['log_tab']) ? sanitize_text_field($_GET['log_tab']) : 'basic';
+                        $logging_level = get_option('omeda_logging_level', 'basic');
+                        ?>
+                        
+                        <h3>Log Entries</h3>
+                        
+                        <!-- Tab Navigation -->
+                        <h2 class="nav-tab-wrapper">
+                            <a href="<?php echo esc_url(add_query_arg('log_tab', 'basic')); ?>" class="nav-tab <?php echo $active_tab === 'basic' ? 'nav-tab-active' : ''; ?>">Basic</a>
+                            <a href="<?php echo esc_url(add_query_arg('log_tab', 'advanced')); ?>" class="nav-tab <?php echo $active_tab === 'advanced' ? 'nav-tab-active' : ''; ?>">Advanced</a>
+                            <a href="<?php echo esc_url(add_query_arg('log_tab', 'raw')); ?>" class="nav-tab <?php echo $active_tab === 'raw' ? 'nav-tab-active' : ''; ?>">Raw Data</a>
+                        </h2>
+                        
                         <table class="wp-list-table widefat fixed striped">
                             <thead>
                                 <tr>
                                     <th style="width: 150px;">Timestamp</th>
                                     <th style="width: 80px;">Level</th>
+                                    <?php if ($active_tab !== 'basic') : ?>
+                                        <th style="width: 120px;">Step/Retry</th>
+                                    <?php endif; ?>
                                     <th>Message</th>
-                                    <th style="width: 200px;">Context</th>
+                                    <?php if ($active_tab === 'raw') : ?>
+                                        <th style="width: 200px;">Context</th>
+                                    <?php endif; ?>
                                 </tr>
                             </thead>
                             <tbody>
@@ -298,6 +410,10 @@ class Omeda_Settings
                                     $log = json_decode($log_json, true);
                                     if (!$log) continue;
                                     
+                                    // Filter based on tab
+                                    if ($active_tab === 'basic' && in_array($log['level'], ['DEBUG', 'RAW'])) continue;
+                                    if ($active_tab === 'advanced' && $log['level'] === 'RAW') continue;
+                                    
                                     $level_class = '';
                                     switch ($log['level']) {
                                         case 'ERROR':
@@ -309,13 +425,45 @@ class Omeda_Settings
                                         case 'INFO':
                                             $level_class = 'background: #00a32a; color: white; padding: 2px 5px; border-radius: 3px;';
                                             break;
+                                        case 'DEBUG':
+                                            $level_class = 'background: #666; color: white; padding: 2px 5px; border-radius: 3px;';
+                                            break;
+                                        case 'RAW':
+                                            $level_class = 'background: #333; color: white; padding: 2px 5px; border-radius: 3px;';
+                                            break;
                                     }
                                 ?>
                                     <tr>
                                         <td><?php echo esc_html($log['timestamp']); ?></td>
                                         <td><span style="<?php echo $level_class; ?>"><?php echo esc_html($log['level']); ?></span></td>
+                                        <?php if ($active_tab !== 'basic') : ?>
+                                            <td>
+                                                <?php 
+                                                if (!empty($log['step'])) {
+                                                    echo esc_html($log['step']);
+                                                }
+                                                if (!empty($log['retry'])) {
+                                                    echo '<br><em style="color: #999;">Retry ' . esc_html($log['retry']) . '</em>';
+                                                }
+                                                if (empty($log['step']) && empty($log['retry'])) {
+                                                    echo '—';
+                                                }
+                                                ?>
+                                            </td>
+                                        <?php endif; ?>
                                         <td><?php echo esc_html($log['message']); ?></td>
-                                        <td><?php echo $log['context'] ? '<pre>' . esc_html(print_r($log['context'], true)) . '</pre>' : '—'; ?></td>
+                                        <?php if ($active_tab === 'raw' && !empty($log['context'])) : ?>
+                                            <td>
+                                                <details>
+                                                    <summary style="cursor: pointer; color: #0073aa;">View Details</summary>
+                                                    <pre style="background: #f5f5f5; padding: 10px; margin-top: 5px; overflow-x: auto; font-size: 11px;"><?php 
+                                                        echo esc_html(print_r($log['context'], true)); 
+                                                    ?></pre>
+                                                </details>
+                                            </td>
+                                        <?php elseif ($active_tab === 'raw') : ?>
+                                            <td>—</td>
+                                        <?php endif; ?>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>

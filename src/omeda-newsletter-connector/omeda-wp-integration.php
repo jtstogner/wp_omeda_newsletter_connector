@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Omeda WordPress Integration
  * Description: Integrates WordPress content lifecycle with Omeda for email deployments.
- * Version: 1.7.1
+ * Version: 1.13.1
  * Author: Josh Stogner
  */
 
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 // Define constants.
-define('OMEDA_WP_VERSION', '1.7.1');
+define('OMEDA_WP_VERSION', '1.13.1');
 define("OMEDA_WP_PLUGIN_AUTHOR", "Josh Stogner");
 define('OMEDA_WP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
@@ -22,6 +22,7 @@ if (!function_exists('as_schedule_single_action')) {
 
 // Include necessary files.
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-settings.php';
+require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-logger.php';
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-api-client.php';
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-data-manager.php';
 require_once OMEDA_WP_PLUGIN_DIR . 'includes/class-omeda-deployment-types.php';
@@ -117,6 +118,17 @@ function omeda_wp_integration()
 {
     return Omeda_WP_Integration::instance();
 }
+
+/**
+ * Plugin activation hook to create necessary database tables.
+ */
+function omeda_wp_activate() {
+    // Create workflow logs table
+    Omeda_Workflow_Manager::create_table();
+}
+
+// Register activation hook
+register_activation_hook(__FILE__, 'omeda_wp_activate');
 
 // Initialize the plugin.
 add_action('plugins_loaded', 'omeda_wp_integration');

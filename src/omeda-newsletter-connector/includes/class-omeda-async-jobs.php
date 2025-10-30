@@ -68,6 +68,14 @@ class Omeda_Async_Jobs {
      * @param int $debounce_seconds How long to wait before execution (default: 0 = immediate).
      */
     public function schedule_create_deployment($post_id, $config_id, $debounce_seconds = 0) {
+        // For immediate execution (0 delay), execute synchronously to avoid Action Scheduler delay
+        if ($debounce_seconds == 0) {
+            $this->workflow_manager->log_status($post_id, 'Creating deployment (synchronous execution)...');
+            $this->handle_create_deployment($post_id, $config_id, 0);
+            return;
+        }
+
+        // For delayed execution, use async methods
         $method = $this->get_scheduling_method();
         $method_name = $method === 'action_scheduler' ? 'Action Scheduler' : 'WP-Cron';
         
@@ -85,20 +93,12 @@ class Omeda_Async_Jobs {
             );
         }
 
-        if ($debounce_seconds > 0) {
-            $this->workflow_manager->log_status(
-                $post_id, 
-                sprintf('Deployment creation scheduled via %s (will execute in %d seconds).', 
-                    $method_name, 
-                    $debounce_seconds)
-            );
-        } else {
-            $this->workflow_manager->log_status(
-                $post_id, 
-                sprintf('Deployment creation scheduled via %s (executing immediately).', 
-                    $method_name)
-            );
-        }
+        $this->workflow_manager->log_status(
+            $post_id, 
+            sprintf('Deployment creation scheduled via %s (will execute in %d seconds).', 
+                $method_name, 
+                $debounce_seconds)
+        );
     }
 
     /**
@@ -110,6 +110,14 @@ class Omeda_Async_Jobs {
      * @param int $debounce_seconds How long to wait before execution (default: 0 = immediate).
      */
     public function schedule_update_content($post_id, $track_id, $config_id, $debounce_seconds = 0) {
+        // For immediate execution (0 delay), execute synchronously
+        if ($debounce_seconds == 0) {
+            $this->workflow_manager->log_status($post_id, 'Updating content (synchronous execution)...');
+            $this->handle_update_content($post_id, $track_id, $config_id, 0);
+            return;
+        }
+
+        // For delayed execution, use async methods
         $method = $this->get_scheduling_method();
         $method_name = $method === 'action_scheduler' ? 'Action Scheduler' : 'WP-Cron';
         
@@ -127,20 +135,12 @@ class Omeda_Async_Jobs {
             );
         }
 
-        if ($debounce_seconds > 0) {
-            $this->workflow_manager->log_status(
-                $post_id, 
-                sprintf('Content update scheduled via %s (will execute in %d seconds).', 
-                    $method_name,
-                    $debounce_seconds)
-            );
-        } else {
-            $this->workflow_manager->log_status(
-                $post_id, 
-                sprintf('Content update scheduled via %s (executing immediately).', 
-                    $method_name)
-            );
-        }
+        $this->workflow_manager->log_status(
+            $post_id, 
+            sprintf('Content update scheduled via %s (will execute in %d seconds).', 
+                $method_name,
+                $debounce_seconds)
+        );
     }
 
     /**
@@ -411,13 +411,15 @@ class Omeda_Async_Jobs {
      * Job Handler: Create Deployment
      */
     public function handle_create_deployment($post_id, $config_id, $retry_count = 0) {
+        $step_name = 'create_deployment';
         try {
-            $this->workflow_manager->log_status($post_id, 'Executing: Create deployment job...');
+            $this->workflow_manager->log_advanced($post_id, 'Starting deployment creation transaction...', $step_name);
+            $this->workflow_manager->log_status($post_id, 'Executing: Create deployment job...', $step_name, $retry_count > 0 ? $retry_count : null);
             
             // Check if deployment already exists
             $existing_track_id = get_post_meta($post_id, '_omeda_track_id', true);
             if (!empty($existing_track_id)) {
-                $this->workflow_manager->log_status($post_id, 'Deployment already exists. Skipping creation.');
+                $this->workflow_manager->log_status($post_id, 'Deployment already exists. Skipping creation.', $step_name);
                 return;
             }
 
@@ -435,34 +437,23 @@ class Omeda_Async_Jobs {
             if (empty($config['DeploymentTypeId'])) {
                 throw new Exception('DeploymentTypeId is required but not configured.');
             }
+            
+            // Log request if raw logging enabled
+            $this->workflow_manager->log_raw($post_id, 'Creating deployment with configuration', $config, $step_name);
 
             // Create deployment
             $api_client = omeda_wp_integration()->get_api_client();
             $track_id = $api_client->step1_create_deployment($config);
             update_post_meta($post_id, '_omeda_track_id', $track_id);
-            $this->workflow_manager->log_status($post_id, "Step 1/3 Complete: Deployment created with TrackID: {$track_id}");
+            
+            $this->workflow_manager->log_advanced($post_id, 'Deployment creation transaction completed successfully.', $step_name);
+            $this->workflow_manager->log_status($post_id, "Step 1/3 Complete: Deployment created with TrackID: {$track_id}", $step_name);
 
-            // Schedule next job: Assign Audience (execute immediately)
-            $method = $this->get_scheduling_method();
-            if ($method === 'action_scheduler') {
-                as_schedule_single_action(
-                    time(),
-                    self::HOOK_ASSIGN_AUDIENCE,
-                    array('post_id' => $post_id, 'track_id' => $track_id, 'config_id' => $config_id, 'retry_count' => 0),
-                    self::GROUP_NAME
-                );
-                $this->trigger_action_scheduler_queue();
-            } elseif ($method === 'wp_cron') {
-                wp_schedule_single_event(
-                    time(),
-                    self::HOOK_ASSIGN_AUDIENCE,
-                    array('post_id' => $post_id, 'track_id' => $track_id, 'config_id' => $config_id, 'retry_count' => 0)
-                );
-                spawn_cron(); // Trigger cron immediately
-            }
+            // Chain next job: Assign Audience (execute synchronously to ensure immediate execution)
+            $this->handle_assign_audience($post_id, $track_id, $config_id, 0);
 
         } catch (Exception $e) {
-            $this->handle_job_error($post_id, 'create_deployment', $e, $retry_count, 
+            $this->handle_job_error($post_id, $step_name, $e, $retry_count, 
                 array('post_id' => $post_id, 'config_id' => $config_id));
         }
     }
@@ -471,40 +462,35 @@ class Omeda_Async_Jobs {
      * Job Handler: Assign Audience
      */
     public function handle_assign_audience($post_id, $track_id, $config_id, $retry_count = 0) {
+        $step_name = 'assign_audience';
         try {
-            $this->workflow_manager->log_status($post_id, 'Executing: Assign audience job...');
+            $this->workflow_manager->log_advanced($post_id, 'Starting audience assignment transaction...', $step_name);
+            $this->workflow_manager->log_status($post_id, 'Executing: Assign audience job...', $step_name, $retry_count > 0 ? $retry_count : null);
             
             $config = $this->workflow_manager->prepare_configuration($post_id, $config_id);
             if (!$config) {
                 throw new Exception('Failed to prepare configuration.');
             }
+            
+            // Log request if raw logging enabled
+            $audience_info = [
+                'track_id' => $track_id,
+                'EncryptedCustomerKey' => $config['EncryptedCustomerKey'] ?? 'Not set'
+            ];
+            $this->workflow_manager->log_raw($post_id, 'Assigning audience', $audience_info, $step_name);
 
             // Assign audience
             $api_client = omeda_wp_integration()->get_api_client();
             $api_client->step2_assign_audience($track_id, $config);
-            $this->workflow_manager->log_status($post_id, 'Step 2/3 Complete: Audience assigned.');
+            
+            $this->workflow_manager->log_advanced($post_id, 'Audience assignment transaction completed successfully.', $step_name);
+            $this->workflow_manager->log_status($post_id, 'Step 2/3 Complete: Audience assigned.', $step_name);
 
-            // Schedule next job: Add Content (execute immediately)
-            $method = $this->get_scheduling_method();
-            if ($method === 'action_scheduler') {
-                as_schedule_single_action(
-                    time(),
-                    self::HOOK_ADD_CONTENT,
-                    array('post_id' => $post_id, 'track_id' => $track_id, 'config_id' => $config_id, 'retry_count' => 0),
-                    self::GROUP_NAME
-                );
-                $this->trigger_action_scheduler_queue();
-            } elseif ($method === 'wp_cron') {
-                wp_schedule_single_event(
-                    time(),
-                    self::HOOK_ADD_CONTENT,
-                    array('post_id' => $post_id, 'track_id' => $track_id, 'config_id' => $config_id, 'retry_count' => 0)
-                );
-                spawn_cron(); // Trigger cron immediately
-            }
+            // Chain next job: Add Content (execute synchronously)
+            $this->handle_add_content($post_id, $track_id, $config_id, 0);
 
         } catch (Exception $e) {
-            $this->handle_job_error($post_id, 'assign_audience', $e, $retry_count, 
+            $this->handle_job_error($post_id, $step_name, $e, $retry_count, 
                 array('post_id' => $post_id, 'track_id' => $track_id, 'config_id' => $config_id));
         }
     }
@@ -512,24 +498,81 @@ class Omeda_Async_Jobs {
     /**
      * Job Handler: Add Content
      */
-    public function handle_add_content($post_id, $track_id, $config_id, $retry_count = 0) {
+    public function handle_add_content($post_id, $track_id, $config_id, $retry_count = 0, $step_name = 'add_content') {
         try {
-            $this->workflow_manager->log_status($post_id, 'Executing: Add content job...');
+            $this->workflow_manager->log_advanced($post_id, 'Starting content addition transaction...', $step_name);
+            $this->workflow_manager->log_status($post_id, 'Executing: Add content job...', $step_name, $retry_count > 0 ? $retry_count : null);
             
             $config = $this->workflow_manager->prepare_configuration($post_id, $config_id);
             if (!$config) {
                 throw new Exception('Failed to prepare configuration.');
             }
 
+            // Log content details for debugging
+            $content_length = isset($config['HtmlContent']) ? strlen($config['HtmlContent']) : 0;
+            $this->workflow_manager->log_status($post_id, sprintf('Sending content (%d chars) to Omeda...', $content_length), $step_name);
+            $this->workflow_manager->log_advanced($post_id, 'Content details prepared for submission.', $step_name);
+            $this->workflow_manager->log_raw($post_id, 'Content details', $config, $step_name);
+
+            // Log request if raw logging enabled
+            $content_info = [
+                'track_id' => $track_id,
+                'subject' => $config['Subject'] ?? 'Not set',
+                'content_length' => $content_length,
+                'html_content' => $config['HtmlContent'] ?? 'Not set'
+            ];
+            $this->workflow_manager->log_raw($post_id, 'Adding content', $content_info, $step_name);
+
             // Add content
             $api_client = omeda_wp_integration()->get_api_client();
-            $api_client->step3_add_content($track_id, $config);
-            $this->workflow_manager->log_status($post_id, 'Step 3/3 Complete: Initial content added. Deployment ready. You may now send a test or schedule the deployment.');
+            $result = $api_client->step3_add_content($track_id, $config);
+            
+            // Log result
+            if (is_array($result) && isset($result['Warnings'])) {
+                $warning_count = count($result['Warnings']);
+                $this->workflow_manager->log_warning($post_id, sprintf('Content added with %d warning(s) from Omeda.', $warning_count), $step_name);
+                foreach ($result['Warnings'] as $warning) {
+                    $this->workflow_manager->log_warning($post_id, '  - ' . $warning, $step_name);
+                }
+            }
+            
+            $this->workflow_manager->log_advanced($post_id, 'Content addition transaction completed successfully.', $step_name);
+            $this->workflow_manager->log_status($post_id, 'Step 3/3 Complete: Initial content added. Deployment ready. You may now send a test or schedule the deployment.', $step_name);
 
             // Mark deployment as ready for testing
             update_post_meta($post_id, '_omeda_deployment_ready', true);
 
         } catch (Exception $e) {
+            $error_data = json_decode($e->getMessage(), true);
+            if (is_array($error_data) && isset($error_data['response_body'])) {
+                // Enhanced error logging with full details
+                $error_summary = $error_data['summary'];
+                $this->workflow_manager->log_error($post_id, 'Content assignment failed: ' . $error_summary, null, $step_name, $retry_count > 0 ? $retry_count : null);
+                
+                // ALWAYS log full error details for debugging (regardless of logging level)
+                // This uses log_error_details which doesn't require 'raw' logging level
+                $error_details = [
+                    'url' => $error_data['url'] ?? 'N/A',
+                    'method' => $error_data['method'] ?? 'N/A',
+                    'http_code' => $error_data['http_code'] ?? 'N/A',
+                    'request_payload' => $error_data['payload'] ?? 'N/A',
+                    'response_body' => $error_data['response_body'] ?? 'N/A'
+                ];
+                $this->workflow_manager->log_error_details($post_id, 'API Request/Response Details', $error_details, $step_name);
+                
+                // Extract and log individual error messages
+                if (isset($error_data['response_body']['Errors']) && is_array($error_data['response_body']['Errors'])) {
+                    foreach ($error_data['response_body']['Errors'] as $err) {
+                        if (isset($err['Error'])) {
+                            $this->workflow_manager->log_error($post_id, '  → Omeda Error: ' . $err['Error'], null, $step_name);
+                        }
+                    }
+                }
+            } else {
+                // Standard error logging if not structured
+                $this->workflow_manager->log_error($post_id, 'Content assignment failed: ' . $e->getMessage(), null, $step_name, $retry_count > 0 ? $retry_count : null);
+            }
+            
             $this->handle_job_error($post_id, 'add_content', $e, $retry_count, 
                 array('post_id' => $post_id, 'track_id' => $track_id, 'config_id' => $config_id));
         }
@@ -539,23 +582,7 @@ class Omeda_Async_Jobs {
      * Job Handler: Update Content
      */
     public function handle_update_content($post_id, $track_id, $config_id, $retry_count = 0) {
-        try {
-            $this->workflow_manager->log_status($post_id, 'Executing: Update content job...');
-            
-            $config = $this->workflow_manager->prepare_configuration($post_id, $config_id);
-            if (!$config) {
-                throw new Exception('Failed to prepare configuration.');
-            }
-
-            // Update content
-            $api_client = omeda_wp_integration()->get_api_client();
-            $api_client->step3_add_content($track_id, $config);
-            $this->workflow_manager->log_status($post_id, 'Content updated successfully in Omeda.');
-
-        } catch (Exception $e) {
-            $this->handle_job_error($post_id, 'update_content', $e, $retry_count, 
-                array('post_id' => $post_id, 'track_id' => $track_id, 'config_id' => $config_id));
-        }
+        $this->handle_add_content($post_id, $track_id, $config_id, $retry_count, 'update_content');
     }
 
     /**
@@ -609,7 +636,11 @@ class Omeda_Async_Jobs {
      * Centralized error handling with exponential backoff retry.
      */
     private function handle_job_error($post_id, $job_name, $exception, $retry_count, $job_args) {
-        $this->workflow_manager->log_error($post_id, $exception->getMessage());
+        // Log the error with full context
+        $this->workflow_manager->log_error($post_id, $exception->getMessage(), null, $job_name, $retry_count);
+        
+        // Log advanced details if enabled
+        $this->workflow_manager->log_advanced($post_id, 'Transaction failed: ' . $exception->getMessage(), $job_name);
 
         if ($retry_count < self::MAX_RETRIES) {
             $delay = 60 * pow(2, $retry_count); // Exponential backoff: 60s, 120s, 240s
@@ -638,10 +669,12 @@ class Omeda_Async_Jobs {
             $this->workflow_manager->log_status(
                 $post_id, 
                 sprintf('Retry %d/%d scheduled for %s (will execute in %d seconds).', 
-                    $retry_count, self::MAX_RETRIES, $job_name, $delay)
+                    $retry_count, self::MAX_RETRIES, $job_name, $delay),
+                $job_name,
+                $retry_count
             );
         } else {
-            $this->workflow_manager->log_error($post_id, "Max retries exceeded for {$job_name}. Workflow aborted.");
+            $this->workflow_manager->log_error($post_id, "Max retries exceeded for {$job_name}. Workflow aborted.", null, $job_name, self::MAX_RETRIES);
         }
     }
 

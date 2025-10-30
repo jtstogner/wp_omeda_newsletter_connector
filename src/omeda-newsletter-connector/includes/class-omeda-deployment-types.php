@@ -125,6 +125,20 @@ class Omeda_Deployment_Types
                 'desc' => 'Enter the exact name of your Audience Builder query in Omeda (case-sensitive).',
                 'placeholder' => 'My Audience Builder Query'
             ),
+            'deployment_name_format' => array(
+                'label' => 'Deployment Name Format', 
+                'type' => 'text', 
+                'required' => false,
+                'desc' => 'Format for the deployment name in Omeda. Use variables like {post_title}, {post_date}, {post_id}, {site_name}, {author_name}.',
+                'placeholder' => '{post_title} - {post_date}'
+            ),
+            'campaign_id_format' => array(
+                'label' => 'Campaign ID Format', 
+                'type' => 'text', 
+                'required' => false,
+                'desc' => 'Format for the campaign ID. Use variables like {post_id}, {post_slug}, {post_date_ymd}.',
+                'placeholder' => 'campaign-{post_id}-{post_date_ymd}'
+            ),
             'from_name'          => array('label' => 'From Name', 'type' => 'text', 'required' => true),
             'from_email'         => array('label' => 'From Email', 'type' => 'email', 'required' => true),
             'reply_to'           => array('label' => 'Reply To Email', 'type' => 'email', 'required' => true),
@@ -432,6 +446,8 @@ class Omeda_Deployment_Types
             'deployment_type_id' => 'DeploymentTypeId',
             'assigned_post_type' => 'AssignedPostType',
             'audience_query_id'  => 'QueryName',
+            'deployment_name_format' => 'DeploymentNameFormat',
+            'campaign_id_format' => 'CampaignIdFormat',
             'from_name'          => 'FromName',
             'from_email'         => 'FromEmail',
             'reply_to'           => 'ReplyTo',

@@ -20,9 +20,9 @@ CODE
 
     
     
-    For Production, use: https://ows.omeda.com/webservices/rest/brand/{brandAbbreviation}/Email Builder/deployment/*
+    For Production, use: https://ows.omeda.com/webservices/rest/brand/{brandAbbreviation}/omail/deployment/*
     
-    For Testing, use: https://ows.omedastaging.com/webservices/rest/brand/{brandAbbreviation}/Email Builder/deployment/*
+    For Testing, use: https://ows.omedastaging.com/webservices/rest/brand/{brandAbbreviation}/omail/deployment/*
     
 
 brandAbbreviationis the abbreviation for the brand to which the data is being
@@ -271,7 +271,7 @@ CODE
         {
           "SubmissionId" : "C95AE90C-BEC6-41F2-91E2-2BA9168D1D1E",
           "TrackId":"FOO0200300112",
-          "Url":"https://ows.omedastaging.com/webservices/rest/brand/FOO/Email Builder/deployment/lookup/FOO0200300112/*"
+          "Url":"https://ows.omedastaging.com/webservices/rest/brand/FOO/omail/deployment/lookup/FOO0200300112/*"
         }
       ]
     }

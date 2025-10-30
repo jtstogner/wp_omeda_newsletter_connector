@@ -55,6 +55,10 @@ class Omeda_Hooks {
         $test_sent = get_post_meta($post->ID, '_omeda_test_sent', true);
         $is_scheduled = get_post_meta($post->ID, '_omeda_deployment_scheduled', true);
         $schedule_date = get_post_meta($post->ID, '_omeda_schedule_date', true);
+        
+        // Get current override values
+        $deployment_name_override = get_post_meta($post->ID, '_omeda_deployment_name', true);
+        $campaign_id_override = get_post_meta($post->ID, '_omeda_campaign_id', true);
 
         // Try to auto-detect deployment type based on post type/template
         $auto_detected_config = null;
@@ -101,6 +105,39 @@ class Omeda_Hooks {
             echo '<p class="description"><em>Deployment type is locked because a deployment has already been created in Omeda.</em></p>';
         } else {
             echo '<p class="description"><em>Leave as "Auto-Detect" to use the deployment type configured for this post type/template, or manually override.</em></p>';
+        }
+        
+        // Get deployment name and campaign ID formats from the selected config
+        $effective_config_id = $selected_config_id ?: $auto_detected_config;
+        if ($effective_config_id) {
+            $config = Omeda_Deployment_Types::get_configuration($effective_config_id);
+            
+            // Show deployment name field
+            $deployment_name_format = !empty($config['DeploymentNameFormat']) ? $config['DeploymentNameFormat'] : '{post_title} - {post_date}';
+            $deployment_name_placeholder = Omeda_Variable_Parser::parse($deployment_name_format, $post->ID);
+            
+            echo '<hr>';
+            echo '<p><label for="_omeda_deployment_name"><strong>Deployment Name:</strong></label></p>';
+            printf(
+                '<input type="text" name="_omeda_deployment_name" id="_omeda_deployment_name" value="%s" placeholder="%s" style="width: 100%%;" %s />',
+                esc_attr($deployment_name_override),
+                esc_attr($deployment_name_placeholder),
+                $is_locked ? 'readonly' : ''
+            );
+            echo '<p class="description">Leave empty to use: <code>' . esc_html($deployment_name_format) . '</code></p>';
+            
+            // Show campaign ID field
+            $campaign_id_format = !empty($config['CampaignIdFormat']) ? $config['CampaignIdFormat'] : 'campaign-{post_id}-{post_date_ymd}';
+            $campaign_id_placeholder = Omeda_Variable_Parser::parse($campaign_id_format, $post->ID);
+            
+            echo '<p style="margin-top: 10px;"><label for="_omeda_campaign_id"><strong>Campaign ID:</strong></label></p>';
+            printf(
+                '<input type="text" name="_omeda_campaign_id" id="_omeda_campaign_id" value="%s" placeholder="%s" style="width: 100%%;" %s />',
+                esc_attr($campaign_id_override),
+                esc_attr($campaign_id_placeholder),
+                $is_locked ? 'readonly' : ''
+            );
+            echo '<p class="description">Leave empty to use: <code>' . esc_html($campaign_id_format) . '</code></p>';
         }
 
         echo '<hr>';
@@ -169,38 +206,131 @@ class Omeda_Hooks {
 
         if ($workflow_logs) {
             echo '<hr><h4>Workflow Log:</h4>';
+            
+            // Get summary
+            $summary = (new Omeda_Workflow_Manager(new Omeda_API_Client()))->get_workflow_summary($post->ID);
+            $status_color = '#999';
+            $status_text = 'Pending';
+            
+            if ($summary['status'] === 'complete') {
+                $status_color = '#46b450';
+                $status_text = 'Complete';
+            } elseif ($summary['status'] === 'in_progress') {
+                $status_color = '#00a0d2';
+                $status_text = 'In Progress';
+            } elseif ($summary['status'] === 'error') {
+                $status_color = '#dc3232';
+                $status_text = 'Error';
+            }
+            
+            echo '<div style="background: #f9f9f9; padding: 10px; margin-bottom: 10px; border-left: 4px solid ' . $status_color . ';">';
+            echo '<strong>Status:</strong> <span style="color: ' . $status_color . ';">' . esc_html($status_text) . '</span><br>';
+            if ($summary['last_step']) {
+                echo '<strong>Last Step:</strong> ' . esc_html($summary['last_step']) . '<br>';
+            }
+            if ($summary['error_count'] > 0) {
+                echo '<strong>Errors:</strong> ' . esc_html($summary['error_count']) . '<br>';
+            }
+            if ($summary['last_timestamp']) {
+                echo '<strong>Last Update:</strong> ' . esc_html($summary['last_timestamp']) . '<br>';
+            }
+            echo '<a href="' . admin_url('admin.php?page=omeda-workflow-logs&view=details&post_id=' . $post->ID) . '" target="_blank" class="button button-small" style="margin-top: 5px;">View Full Logs</a>';
+            echo '</div>';
+            
+            // Show recent log entries (last 5)
+            $logging_level = get_option('omeda_logging_level', 'basic');
             echo '<div style="max-height: 200px; overflow-y: scroll; background: #f9f9f9; padding: 5px; font-size: 0.9em; font-family: monospace; border: 1px solid #eee;">';
-            foreach (array_reverse($workflow_logs) as $log_json) {
+            
+            $recent_logs = array_slice(array_reverse($workflow_logs), 0, 5);
+            foreach ($recent_logs as $log_json) {
                 $log_data = json_decode($log_json, true);
                 if (!$log_data) continue;
+                
+                // Filter based on logging level
+                if ($logging_level === 'basic' && $log_data['level'] === 'DEBUG') continue;
+                if ($logging_level !== 'raw' && $log_data['level'] === 'RAW') continue;
 
                 $color = 'black';
                 if ($log_data['level'] === 'ERROR') $color = '#dc3232';
                 if ($log_data['level'] === 'WARN') $color = '#ffb900';
                 if (strpos($log_data['message'], 'Complete') !== false) $color = '#46b450';
+                if ($log_data['level'] === 'DEBUG') $color = '#666';
+                
+                $step_info = '';
+                if (!empty($log_data['step'])) {
+                    $step_info = ' [' . esc_html($log_data['step']) . ']';
+                }
+                if (!empty($log_data['retry'])) {
+                    $step_info .= ' [Retry ' . esc_html($log_data['retry']) . ']';
+                }
                 
                 printf(
-                    '<div style="color:%s; margin-bottom: 3px;">[%s] [%s] %s</div>',
+                    '<div style="color:%s; margin-bottom: 3px;">[%s] [%s]%s %s</div>',
                     $color,
                     esc_html($log_data['timestamp']),
                     esc_html($log_data['level']),
+                    $step_info,
                     esc_html($log_data['message'])
                 );
             }
             echo '</div>';
+            echo '<p class="description"><em>Showing recent entries. <a href="' . admin_url('admin.php?page=omeda-workflow-logs&view=details&post_id=' . $post->ID) . '" target="_blank">View complete log with full details →</a></em></p>';
         } else if ($selected_config_id) {
              echo '<p><em>Save this draft to create the deployment in Omeda.</em></p>';
         }
     }
 
     public function handle_post_save($post_id) {
+        // Log entry
+        error_log("Omeda: handle_post_save called for post_id={$post_id}");
+        
         // Security checks and basic validation
-        if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || !isset($_POST['omeda_post_meta_nonce']) || !wp_verify_nonce($_POST['omeda_post_meta_nonce'], 'omeda_save_post_meta') || !current_user_can('edit_post', $post_id) || !in_array(get_post_type($post_id), $this->get_supported_post_types())) {
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            error_log("Omeda: Skipping - autosave");
+            return;
+        }
+        
+        // Verify nonce only if it's present (traditional form submission)
+        // Allow REST API and programmatic saves to proceed without nonce
+        if (isset($_POST['omeda_post_meta_nonce'])) {
+            if (!wp_verify_nonce($_POST['omeda_post_meta_nonce'], 'omeda_save_post_meta')) {
+                error_log("Omeda: Skipping - nonce verification failed");
+                return;
+            }
+            // Verify user can edit post when nonce is present
+            if (!current_user_can('edit_post', $post_id)) {
+                error_log("Omeda: Skipping - user cannot edit post");
+                return;
+            }
+        } else {
+            // For REST API or programmatic saves, be more permissive
+            // Only check if user is logged in - Newsletter Glue uses REST API
+            if (!is_user_logged_in()) {
+                error_log("Omeda: Skipping - user not logged in (no nonce, REST API save)");
+                return;
+            }
+            error_log("Omeda: Proceeding without nonce (REST API or programmatic save)");
+        }
+        
+        if (!in_array(get_post_type($post_id), $this->get_supported_post_types())) {
+            error_log("Omeda: Skipping - unsupported post type: " . get_post_type($post_id));
             return;
         }
 
+        error_log("Omeda: All checks passed, proceeding with workflow");
+        
         $config_id = isset($_POST['_omeda_config_id']) ? sanitize_text_field($_POST['_omeda_config_id']) : '';
         $track_id = get_post_meta($post_id, '_omeda_track_id', true);
+        
+        error_log("Omeda: config_id={$config_id}, track_id={$track_id}");
+        
+        // Save deployment name and campaign ID overrides
+        if (isset($_POST['_omeda_deployment_name'])) {
+            update_post_meta($post_id, '_omeda_deployment_name', sanitize_text_field($_POST['_omeda_deployment_name']));
+        }
+        if (isset($_POST['_omeda_campaign_id'])) {
+            update_post_meta($post_id, '_omeda_campaign_id', sanitize_text_field($_POST['_omeda_campaign_id']));
+        }
 
         // If no explicit config selected, try auto-detection
         if (empty($config_id)) {
@@ -212,35 +342,48 @@ class Omeda_Hooks {
 
         if (empty($config_id)) {
             // User selected "-- Do Not Deploy --" or no matching config found.
+            error_log("Omeda: No config_id, skipping workflow");
             return;
         }
 
+        error_log("Omeda: Final config_id to use: {$config_id}");
+        
         // Get async jobs handler
         $async_jobs = omeda_wp_integration()->async_jobs;
         
         // Check if Action Scheduler is available
         $use_async = function_exists('as_schedule_single_action');
+        
+        error_log("Omeda: use_async={$use_async}, async_jobs=" . (is_object($async_jobs) ? 'yes' : 'no'));
 
         if (empty($track_id)) {
             // SCENARIO: CREATE DEPLOYMENT - Execute immediately
+            error_log("Omeda: Creating NEW deployment");
             if ($use_async && $async_jobs) {
                 // Async: Schedule creation job to run ASAP (no delay)
+                error_log("Omeda: Scheduling async create_deployment job");
                 $async_jobs->schedule_create_deployment($post_id, $config_id, 0);
             } else {
                 // Fallback: Synchronous execution
+                error_log("Omeda: Running synchronous create_and_assign_audience");
                 $this->workflow_manager->create_and_assign_audience($post_id, $config_id);
             }
 
         } else {
             // SCENARIO: UPDATE CONTENT - Execute immediately
+            error_log("Omeda: Updating EXISTING deployment (track_id={$track_id})");
             if ($use_async && $async_jobs) {
                 // Async: Schedule update job to run ASAP (no delay)
+                error_log("Omeda: Scheduling async update_content job");
                 $async_jobs->schedule_update_content($post_id, $track_id, $config_id, 0);
             } else {
                 // Fallback: Synchronous execution
+                error_log("Omeda: Running synchronous update_content");
                 $this->workflow_manager->update_content($post_id, $track_id, $config_id);
             }
         }
+        
+        error_log("Omeda: handle_post_save completed");
     }
 
     /**
